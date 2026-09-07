@@ -42,6 +42,7 @@
         "symfony/web-link": "7.4.*",
         "symfony/yaml": "7.4.*",
         "twig/extra-bundle": "^2.12|^3.0",
+        "twig/string-extra": "^3.24",
         "twig/twig": "^2.12|^3.0"
     },
     "config": {
@@ -96,6 +97,8 @@
         }
     },
     "require-dev": {
+        "dama/doctrine-test-bundle": "^8.6",
+        "deployer/deployer": "^8.0",
         "phpunit/phpunit": "^12.5",
         "symfony/browser-kit": "7.4.*",
         "symfony/css-selector": "7.4.*",

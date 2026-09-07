@@ -1,24 +1,63 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
-        {% block stylesheets %}
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="referrer" content="no-referrer">
+    <title>{% block title %}Secret Santa Familial{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
+    <link rel="icon" href="{{ asset('favicon-32.png') }}" type="image/png" sizes="32x32">
+    <link rel="icon" href="{{ asset('images/logo-mark.png') }}" type="image/png" sizes="192x192">
+    <link rel="apple-touch-icon" href="{{ asset('images/apple-touch-icon.png') }}">
+    {% block stylesheets %}{% endblock %}
+    {% block javascripts %}
+        {% block importmap %}{{ importmap('app') }}{% endblock %}
+    {% endblock %}
+</head>
+<body>
+{% block header %}
+<header class="site-header">
+    <a class="brand" href="{% block brand_href %}{{ path('home') }}{% endblock %}" aria-label="Secret Santa Familial">
+        <img class="brand-logo" src="{{ asset('images/logo.png') }}" alt="" width="200" height="60" decoding="async">
+    </a>
+    <nav class="nav-links" aria-label="Navigation principale">
+        {% block nav %}
+            <a href="{{ path('home') }}">Accueil</a>
+            {% if is_granted('ROLE_ADMIN') %}
+                <a href="{{ path('admin_dashboard') }}">Admin</a>
+                <form class="logout-form" action="{{ path('admin_logout') }}" method="post">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
+                    <button class="btn-logout" type="submit">Déconnexion</button>
+                </form>
+            {% else %}
+                <a href="{{ path('admin_login') }}">Espace organisateur</a>
+            {% endif %}
         {% endblock %}
+    </nav>
+</header>
+{% endblock %}
 
-        {% block javascripts %}
-            {% block importmap %}{{ importmap('app') }}{% endblock %}
-        {% endblock %}
+<main class="{% block main_class %}container-narrow{% endblock %}" style="padding: 1.5rem 0 2rem;">
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="flash flash-{{ label }}" role="{{ label in ['danger', 'error'] ? 'alert' : 'status' }}">
+                {% if label == 'success' %}<i class="fa-solid fa-circle-check"></i>
+                {% elseif label in ['danger', 'error'] %}<i class="fa-solid fa-circle-exclamation"></i>
+                {% else %}<i class="fa-solid fa-circle-info"></i>{% endif %}
+                <span>{{ message }}</span>
+            </div>
+        {% endfor %}
+    {% endfor %}
 
-        {% set frankenphp_hot_reload = app.request.server.get('FRANKENPHP_HOT_RELOAD') %}
-        {% if frankenphp_hot_reload %}
-        <meta name="frankenphp-hot-reload:url" content="{{ frankenphp_hot_reload }}">
-        <script src="https://cdn.jsdelivr.net/npm/idiomorph"></script>
-        <script src="https://cdn.jsdelivr.net/npm/frankenphp-hot-reload/+esm" type="module"></script>
-        {% endif %}
-    </head>
-    <body>
-        {% block body %}{% endblock %}
-    </body>
+    {% block body %}{% endblock %}
+</main>
+
+<footer class="site-footer">
+    Une édition, une famille, zéro spoiler.
+</footer>
+</body>
 </html>

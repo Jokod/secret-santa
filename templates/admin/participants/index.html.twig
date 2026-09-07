@@ -1,0 +1,100 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Participants · Secret Santa{% endblock %}
+
+{% block body %}
+{% import '_empty.html.twig' as ui %}
+
+<div class="page-header">
+    <div>
+        <h1>Participants</h1>
+        <p class="page-lead">Ajoutez les membres de la famille. Chacun recevra un email avec son lien personnel.</p>
+    </div>
+    {% if not locked %}
+        <a class="btn btn-primary" href="{{ path('admin_participants_new') }}"><i class="fa-solid fa-user-plus"></i> Ajouter</a>
+    {% endif %}
+</div>
+
+{% if locked %}
+    <div class="locked-banner"><i class="fa-solid fa-lock"></i><span>Tirage actif : pas de nouvel ajout ni suppression.</span></div>
+{% endif %}
+
+{% if participants is empty %}
+    <div class="panel">
+        {{ ui.empty(
+            'fa-users',
+            'Aucun participant',
+            'Commencez par ajouter au moins 3 personnes pour pouvoir lancer le tirage.',
+            locked ? null : 'Ajouter un participant',
+            locked ? null : path('admin_participants_new')
+        ) }}
+    </div>
+{% else %}
+<div class="panel table-wrap">
+    <table class="data">
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Email</th>
+                <th>Lien personnel</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for p in participants %}
+            <tr>
+                <td><strong>{{ p.name }}</strong></td>
+                <td>{{ p.email }}</td>
+                <td>
+                    {% set personalLink = url('participant_home', {token: p.tokenSecret}) %}
+                    <div class="link-cell">
+                        <code class="code-link">{{ personalLink }}</code>
+                        <div class="link-cell-actions">
+                            <button
+                                type="button"
+                                class="btn btn-ghost btn-sm btn-icon"
+                                data-controller="clipboard"
+                                data-clipboard-text-value="{{ personalLink }}"
+                                data-action="clipboard#copy"
+                                title="Copier le lien"
+                                aria-label="Copier le lien de {{ p.name }}"
+                            >
+                                <i class="fa-solid fa-clipboard" data-clipboard-target="icon" aria-hidden="true"></i>
+                            </button>
+                            <a
+                                class="btn btn-ghost btn-sm btn-icon"
+                                href="{{ personalLink }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="Ouvrir dans un nouvel onglet"
+                                aria-label="Ouvrir le lien de {{ p.name }} dans un nouvel onglet"
+                            >
+                                <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="table-actions">
+                        {% if not locked and not p.assigned %}
+                            <a class="btn btn-ghost btn-sm" href="{{ path('admin_participants_edit', {id: p.id}) }}">Modifier</a>
+                            <form method="post" action="{{ path('admin_participants_delete', {id: p.id}) }}" onsubmit="return confirm('Supprimer ce participant ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_participant_' ~ p.id) }}">
+                                <button class="btn btn-danger btn-sm" type="submit">Supprimer</button>
+                            </form>
+                        {% elseif p.assigned %}
+                            <span class="status-badge status-badge-assigned">Assigné</span>
+                        {% endif %}
+                        <form method="post" action="{{ path('admin_participants_resend_welcome', {id: p.id}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('resend_welcome_' ~ p.id) }}">
+                            <button class="btn btn-ghost btn-sm" type="submit">Renvoyer l’email</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+{% endblock %}

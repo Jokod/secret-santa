@@ -1,0 +1,54 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Messages · Secret Santa{% endblock %}
+
+{% block body %}
+{% import '_empty.html.twig' as ui %}
+
+<div class="page-header">
+    <div>
+        <h1>Conversations</h1>
+        <p class="page-lead">Vue organisateur pour médiation. Les participants ne voient jamais l’identité de leur Santa.</p>
+    </div>
+</div>
+
+{% if threads is empty %}
+    <div class="panel">
+        {{ ui.empty(
+            'fa-comments',
+            'Aucun message',
+            'Les échanges Santa ↔ destinataire apparaîtront ici après le tirage.',
+            null,
+            null
+        ) }}
+    </div>
+{% else %}
+    <div class="messaging-cards">
+        {% for thread in threads %}
+            {% set last = thread.messages|last %}
+            <a class="messaging-card{% if thread.unreadCount > 0 %} has-unread{% endif %}" href="{{ path('admin_messages_show', {santaId: thread.santa.id, targetId: thread.target.id}) }}">
+                <div class="messaging-card-icon"><i class="fa-solid fa-comments" aria-hidden="true"></i></div>
+                <div class="messaging-card-body">
+                    <strong>
+                        <span class="conversation-party conversation-party-santa">{{ thread.santa.name }}</span>
+                        <span class="conversation-arrow" aria-hidden="true">↔</span>
+                        <span class="conversation-party conversation-party-target">{{ thread.target.name }}</span>
+                    </strong>
+                    <span class="help">
+                        {{ thread.messages|length }} message{{ thread.messages|length > 1 ? 's' : '' }}
+                        {% if last %} · {{ last.createdAt|date('d/m/Y H:i') }}{% endif %}
+                    </span>
+                    {% if last %}
+                        <span class="messaging-card-preview">{{ last.body|length > 90 ? last.body|slice(0, 90) ~ '…' : last.body }}</span>
+                    {% endif %}
+                </div>
+                {% if thread.unreadCount > 0 %}
+                    <span class="status-badge status-badge-unread">{{ thread.unreadCount }} non lu{{ thread.unreadCount > 1 ? 's' : '' }}</span>
+                {% else %}
+                    <span class="help">Ouvrir</span>
+                {% endif %}
+            </a>
+        {% endfor %}
+    </div>
+{% endif %}
+{% endblock %}

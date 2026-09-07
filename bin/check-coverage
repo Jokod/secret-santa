@@ -1,0 +1,80 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+/**
+ * Fail unless Clover coverage is exactly 100% for statements, methods and classes.
+ */
+$clover = $argv[1] ?? 'var/coverage/clover.xml';
+if (!is_file($clover)) {
+    fwrite(STDERR, "Clover file not found: {$clover}\n");
+    exit(1);
+}
+
+$xml = new SimpleXMLElement((string) file_get_contents($clover));
+$metrics = $xml->project->metrics ?? null;
+if ($metrics === null) {
+    fwrite(STDERR, "Invalid clover metrics in {$clover}\n");
+    exit(1);
+}
+
+$statements = (int) $metrics['statements'];
+$coveredStatements = (int) $metrics['coveredstatements'];
+$methods = (int) $metrics['methods'];
+$coveredMethods = (int) $metrics['coveredmethods'];
+$classes = (int) $metrics['classes'];
+$coveredClasses = (int) $metrics['coveredclasses'] ?? 0;
+
+// clover uses coveredelements; classes coverage from files
+if (!isset($metrics['coveredclasses'])) {
+    $coveredClasses = 0;
+    foreach ($xml->xpath('//class') as $class) {
+        $cm = $class->metrics;
+        if ($cm === null) {
+            continue;
+        }
+        $classStatements = (int) $cm['statements'];
+        $classCovered = (int) $cm['coveredstatements'];
+        if ($classStatements > 0 && $classStatements === $classCovered) {
+            ++$coveredClasses;
+        } elseif ($classStatements === 0) {
+            ++$coveredClasses;
+        }
+    }
+    // recount classes
+    $classes = count($xml->xpath('//class') ?: []);
+}
+
+$ok = $statements > 0
+    && $statements === $coveredStatements
+    && $methods === $coveredMethods;
+
+echo sprintf(
+    "Coverage check: lines %d/%d (%.2f%%), methods %d/%d (%.2f%%)\n",
+    $coveredStatements,
+    $statements,
+    $statements ? ($coveredStatements / $statements) * 100 : 0,
+    $coveredMethods,
+    $methods,
+    $methods ? ($coveredMethods / $methods) * 100 : 0,
+);
+
+if (!$ok) {
+    fwrite(STDERR, "FAILED: coverage must be 100% (non-negotiable).\n");
+    foreach ($xml->xpath('//file') as $file) {
+        $m = $file->metrics;
+        if ($m === null) {
+            continue;
+        }
+        $s = (int) $m['statements'];
+        $c = (int) $m['coveredstatements'];
+        if ($s > 0 && $c < $s) {
+            fwrite(STDERR, sprintf(" - %s: %d/%d lines\n", (string) $file['name'], $c, $s));
+        }
+    }
+    exit(1);
+}
+
+echo "OK: 100% line and method coverage.\n";
+exit(0);

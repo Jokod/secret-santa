@@ -1,0 +1,122 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Tirage · Secret Santa{% endblock %}
+
+{% block body %}
+{% import '_empty.html.twig' as ui %}
+
+<div class="page-header">
+    <div>
+        <h1>Tirage au sort</h1>
+        <p class="page-lead">{{ participantCount }} participant(s), minimum requis : 3. Le tirage respecte les exclusions et l’auto-exclusion.</p>
+    </div>
+</div>
+
+<div class="panel" style="display:grid;gap:1.15rem;">
+    {% if participantsWithoutWishes is not empty %}
+        <div class="hint-box warning" role="alert">
+            <strong><i class="fa-solid fa-triangle-exclamation"></i> {{ participantsWithoutWishes|length }} participant(s) sans souhaits</strong>
+            <ul class="missing-wishes-list">
+                {% for p in participantsWithoutWishes %}
+                    <li>{{ p.name }} <span class="help">({{ p.email }})</span></li>
+                {% endfor %}
+            </ul>
+            <p class="help" style="margin:0.6rem 0 0;">Ils pourront toujours compléter leur liste après le tirage.</p>
+        </div>
+        {% if canRemindMissing %}
+            <form method="post" action="{{ path('admin_draw_remind') }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('draw_remind') }}">
+                <button class="btn btn-secondary" type="submit">
+                    <i class="fa-solid fa-bell"></i> Relancer uniquement ceux sans souhaits
+                </button>
+            </form>
+        {% endif %}
+    {% elseif participantCount > 0 %}
+        <div class="hint-box">
+            Tous les participants ont au moins un souhait.
+        </div>
+        {# Formulaire conservé (masqué) pour permettre un rappel CSRF-safe côté tests / outils #}
+        <form method="post" action="{{ path('admin_draw_remind') }}" hidden>
+            <input type="hidden" name="_token" value="{{ csrf_token('draw_remind') }}">
+            <button type="submit">Relancer uniquement ceux sans souhaits</button>
+        </form>
+    {% endif %}
+
+    {% if not locked %}
+        {% if participantCount < 3 %}
+            <div class="hint-box info">
+                Il manque {{ 3 - participantCount }} participant(s) pour lancer le tirage.
+                <a href="{{ path('admin_participants') }}">Ajouter des participants</a>
+            </div>
+            <button class="btn btn-primary is-disabled" type="button" disabled>
+                <i class="fa-solid fa-shuffle"></i> Lancer le tirage
+            </button>
+        {% else %}
+            <div class="hint-box">
+                Tout est prêt : le tirage enverra un email de résultat à chaque participant.
+            </div>
+            <form method="post" action="{{ path('admin_draw_run') }}" class="santa-form">
+                <input type="hidden" name="_token" value="{{ csrf_token('draw_run') }}">
+                <div class="form-row form-row-check">
+                    <label class="check-label">
+                        <input class="form-check" type="checkbox" name="confirm" value="1" required>
+                        <span>Je confirme lancer le tirage et envoyer les emails de résultat à tous les participants.</span>
+                    </label>
+                </div>
+                {% if participantsWithoutWishes is not empty %}
+                    <div class="form-row form-row-check">
+                        <label class="check-label">
+                            <input class="form-check" type="checkbox" name="confirm_missing_wishes" value="1" required>
+                            <span>Je confirme lancer malgré {{ participantsWithoutWishes|length }} participant(s) sans souhaits.</span>
+                        </label>
+                    </div>
+                {% endif %}
+                <div class="actions-row">
+                    <button class="btn btn-primary" type="submit"><i class="fa-solid fa-shuffle"></i> Lancer le tirage</button>
+                </div>
+            </form>
+        {% endif %}
+    {% else %}
+        <div class="locked-banner"><i class="fa-solid fa-lock"></i><span>Tirage actif. Les appariements restent confidentiels pour les participants.</span></div>
+        <form method="post" action="{{ path('admin_draw_reset') }}" class="santa-form">
+            <input type="hidden" name="_token" value="{{ csrf_token('draw_reset') }}">
+            <div class="form-row form-row-check">
+                <label class="check-label">
+                    <input class="form-check" type="checkbox" name="confirm" value="1" required>
+                    <span>Je confirme réinitialiser le tirage et tous les messages (irréversible pour cette édition).</span>
+                </label>
+            </div>
+            <div class="actions-row">
+                <button class="btn btn-danger" type="submit">Réinitialiser</button>
+            </div>
+        </form>
+    {% endif %}
+</div>
+
+<div class="panel">
+    <h2>Appariements</h2>
+    {% if assignments is empty %}
+        {{ ui.empty(
+            'fa-shuffle',
+            'Pas encore de tirage',
+            'Les appariements apparaîtront ici après le lancement (vue organisateur uniquement).',
+            null,
+            null
+        ) }}
+    {% else %}
+        <div class="table-wrap">
+            <table class="data">
+                <thead><tr><th>Santa</th><th>Offre à</th></tr></thead>
+                <tbody>
+                {% for a in assignments %}
+                    <tr>
+                        <td>{{ a.santa.name }}</td>
+                        <td>{{ a.target.name }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

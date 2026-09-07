@@ -1,0 +1,37 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}{{ santa.name }} ↔ {{ target.name }} · Messages{% endblock %}
+
+{% block body %}
+<div class="page-header">
+    <div>
+        <h1>
+            <span class="conversation-party conversation-party-santa">{{ santa.name }}</span>
+            <span class="conversation-arrow" aria-hidden="true">↔</span>
+            <span class="conversation-party conversation-party-target">{{ target.name }}</span>
+        </h1>
+        <p class="page-lead">Santa → {{ target.name }} · {{ thread|length }} message{{ thread|length > 1 ? 's' : '' }}</p>
+    </div>
+    <a class="btn btn-ghost" href="{{ path('admin_messages') }}"><i class="fa-solid fa-arrow-left"></i> Conversations</a>
+</div>
+
+<section class="panel conversation-group">
+    <div class="chat chat-admin">
+        {% for m in thread %}
+            {% set fromSanta = m.type.value == 'to_target' %}
+            <article class="chat-bubble {{ fromSanta ? 'chat-bubble-santa' : 'chat-bubble-target' }}">
+                <div class="chat-bubble-meta">
+                    {% if fromSanta %}
+                        Santa ({{ santa.name }})
+                    {% else %}
+                        {{ target.name }}
+                    {% endif %}
+                    · {{ m.createdAt|date('d/m/Y H:i') }}
+                </div>
+                <div class="chat-bubble-body">{{ m.body|nl2br }}</div>
+            </article>
+        {% endfor %}
+    </div>
+</section>
+<div data-controller="scroll-bottom" aria-hidden="true"></div>
+{% endblock %}

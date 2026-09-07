@@ -1,0 +1,23 @@
+services: 
+
+  database: 
+    image: mysql:8.0
+    container_name: santa_database_${APP_INSTANCE}
+    restart: always
+    ports:
+      - 6950:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - santa_network
+
+volumes:
+  mysql_data:
+
+networks:
+  santa_network:
+    name: santa_santa_network
+    external: true

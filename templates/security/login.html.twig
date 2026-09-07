@@ -1,0 +1,32 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Connexion organisateur · Secret Santa{% endblock %}
+
+{% block body %}
+<section class="panel" style="max-width:440px;margin:2rem auto;">
+    <h1>Espace organisateur</h1>
+    <p class="help">Connectez-vous pour préparer l’édition familiale.</p>
+
+    {% if error %}
+        <div class="flash flash-danger" role="alert">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span>{{ error.messageKey|trans(error.messageData, 'security') }}</span>
+        </div>
+    {% endif %}
+
+    <form method="post" class="santa-form" novalidate>
+        <div class="form-row">
+            <label class="required" for="username">Email <span class="req" aria-hidden="true">*</span></label>
+            <input class="form-control" id="username" type="email" name="_username" value="{{ last_username }}" required autofocus autocomplete="username" placeholder="orga@exemple.fr">
+        </div>
+        <div class="form-row">
+            <label class="required" for="password">Mot de passe <span class="req" aria-hidden="true">*</span></label>
+            <input class="form-control" id="password" type="password" name="_password" required autocomplete="current-password">
+        </div>
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+        <div class="actions-row">
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-right-to-bracket"></i> Se connecter</button>
+        </div>
+    </form>
+</section>
+{% endblock %}

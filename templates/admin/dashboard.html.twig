@@ -1,0 +1,28 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Tableau de bord · Secret Santa{% endblock %}
+
+{% block body %}
+<h1>Tableau de bord</h1>
+<p>Checklist de l’édition : participants → exclusions → config → souhaits → tirage → suivi.</p>
+
+{% if locked %}
+    <div class="locked-banner"><i class="fa-solid fa-lock"></i> Tirage actif : réglages critiques verrouillés jusqu’au reset.</div>
+{% endif %}
+
+{% include '_budget.html.twig' with {amount: settings.budgetMax} %}
+
+<div class="stats" style="margin:1.5rem 0;">
+    <div class="stat"><strong>{{ participantCount }}</strong>Participants</div>
+    <div class="stat"><strong>{{ wishCount }}</strong>Souhaits</div>
+    <div class="stat"><strong>{{ unreadMessages }}</strong>Messages non lus</div>
+    <div class="stat"><strong>{{ drawActive ? 'Oui' : 'Non' }}</strong>Tirage lancé</div>
+</div>
+
+<ul class="checklist">
+    <li><i class="fa-solid fa-user-plus"></i><div><a href="{{ path('admin_participants') }}">Gérer les participants</a></div></li>
+    <li><i class="fa-solid fa-ban"></i><div><a href="{{ path('admin_exclusions') }}">Poser les exclusions</a></div></li>
+    <li><i class="fa-solid fa-sliders"></i><div><a href="{{ path('admin_settings') }}">Configurer budget et emails</a></div></li>
+    <li><i class="fa-solid fa-shuffle"></i><div><a href="{{ path('admin_draw') }}">Lancer ou réinitialiser le tirage</a></div></li>
+</ul>
+{% endblock %}

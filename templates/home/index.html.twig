@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Secret Santa Familial{% endblock %}
+
+{% block main_class %}layout-home{% endblock %}
+
+{% block nav %}
+    {% if is_granted('ROLE_ADMIN') %}
+        <a href="{{ path('admin_dashboard') }}">Admin</a>
+        <form class="logout-form" action="{{ path('admin_logout') }}" method="post">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
+            <button class="btn-logout" type="submit">Déconnexion</button>
+        </form>
+    {% else %}
+        <a href="{{ path('admin_login') }}">Espace organisateur</a>
+    {% endif %}
+{% endblock %}
+
+{% block body %}
+<section class="hero">
+    <div class="hero-inner">
+        <img class="brand-hero-logo" src="{{ asset('images/logo.png') }}" alt="Secret Santa Familial" width="320" height="96" decoding="async">
+        <h1>Organisez le tirage sans stress, gardez la magie intacte.</h1>
+        <p>Participants, exclusions, souhaits et messages anonymes : un outil privé pour votre Noël en famille.</p>
+        <div class="hero-actions">
+            <a class="btn btn-primary" href="{{ path('admin_login') }}"><i class="fa-solid fa-key"></i> Espace organisateur</a>
+        </div>
+    </div>
+</section>
+
+<div class="container-narrow home-content">
+    <section class="panel">
+        <h2>Comment ça marche</h2>
+        <ul class="checklist">
+            <li><i class="fa-solid fa-users"></i><div><strong>Préparez la liste</strong><br>Ajoutez les proches, posez les exclusions réalistes (couples, etc.).</div></li>
+            <li><i class="fa-solid fa-gift"></i><div><strong>Chacun remplit ses souhaits</strong><br>Un lien magique personnel, aucun compte à créer.</div></li>
+            <li><i class="fa-solid fa-shuffle"></i><div><strong>Lancez un tirage fiable</strong><br>L’algorithme respecte les règles, ou dit clairement si c’est impossible.</div></li>
+            <li><i class="fa-solid fa-comments"></i><div><strong>Échangez sans spoiler</strong><br>Messagerie Santa ↔ destinataire, identité du Santa protégée.</div></li>
+        </ul>
+    </section>
+</div>
+{% endblock %}

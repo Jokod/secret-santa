@@ -1,0 +1,155 @@
+{% extends 'participant/base.html.twig' %}
+
+{% block title %}Mon espace · {{ participant.name }}{% endblock %}
+
+{% block body %}
+{% import '_empty.html.twig' as ui %}
+
+<div class="page-header">
+    <div>
+        <h1>Ton espace Secret Santa</h1>
+        {% if settings.eventDate %}
+            <p class="page-lead">Événement le {{ settings.eventDate|date('d/m/Y') }}</p>
+        {% endif %}
+    </div>
+</div>
+
+{% include '_budget.html.twig' with {amount: settings.budgetMax} %}
+
+{% if locked %}
+<section class="panel">
+    <h2>Messagerie</h2>
+    <p class="help">Échange anonymement avec ta cible ou ton Santa. Les messages non lus apparaissent ici.</p>
+    <div class="messaging-cards">
+        {% if target %}
+            <a class="messaging-card{% if unreadFromTarget > 0 %} has-unread{% endif %}" href="{{ path('participant_messages_target', {token: participant.tokenSecret}) }}">
+                <div class="messaging-card-icon"><i class="fa-solid fa-gift" aria-hidden="true"></i></div>
+                <div class="messaging-card-body">
+                    <strong>Avec ta cible</strong>
+                    <span class="help">{{ target.name }} · questions, précisions, remerciements</span>
+                </div>
+                {% if unreadFromTarget > 0 %}
+                    <span class="status-badge status-badge-unread">{{ unreadFromTarget }} non lu{{ unreadFromTarget > 1 ? 's' : '' }}</span>
+                {% else %}
+                    <span class="help">Aucun non lu</span>
+                {% endif %}
+            </a>
+        {% endif %}
+        {% if participant.assignmentAsTarget %}
+            <a class="messaging-card{% if unreadFromSanta > 0 %} has-unread{% endif %}" href="{{ path('participant_messages_santa', {token: participant.tokenSecret}) }}">
+                <div class="messaging-card-icon"><i class="fa-solid fa-hat-wizard" aria-hidden="true"></i></div>
+                <div class="messaging-card-body">
+                    <strong>Avec ton Santa</strong>
+                    <span class="help">Anonyme · réponses et précisions pour ton cadeau</span>
+                </div>
+                {% if unreadFromSanta > 0 %}
+                    <span class="status-badge status-badge-unread">{{ unreadFromSanta }} non lu{{ unreadFromSanta > 1 ? 's' : '' }}</span>
+                {% else %}
+                    <span class="help">Aucun non lu</span>
+                {% endif %}
+            </a>
+        {% endif %}
+    </div>
+</section>
+{% endif %}
+
+{% if target %}
+<section class="panel">
+    <h2>Tu offres à {{ target.name }}</h2>
+    <p class="help">Voici ses souhaits : garde le secret, et n’essaie pas de découvrir qui t’offre un cadeau.</p>
+    {% if target.wishes is empty %}
+        {{ ui.empty('fa-gift', 'Pas encore de souhaits', target.name ~ ' n’a pas encore rempli sa liste. Tu pourras lui écrire via la messagerie.', null, null) }}
+    {% else %}
+        <div class="table-wrap">
+            <table class="data">
+                <thead><tr><th>#</th><th>Titre</th><th>Prix</th><th>Lien</th></tr></thead>
+                <tbody>
+                {% for w in target.wishes %}
+                    <tr>
+                        <td>{{ w.preferenceOrder }}</td>
+                        <td>
+                            <strong>{{ w.title }}</strong>
+                            {% if w.description %}<br><span class="help">{{ w.description }}</span>{% endif %}
+                        </td>
+                        <td>{{ w.estimatedPrice }} €</td>
+                        <td>{% if w.url %}<a href="{{ w.url }}" target="_blank" rel="noopener noreferrer">Voir</a>{% else %}<span class="help">-</span>{% endif %}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</section>
+{% else %}
+<section class="panel">
+    <h2>En attendant le tirage</h2>
+    <p class="help">Complète ta liste de souhaits. Tu découvriras ta cible après le lancement par l’organisateur.</p>
+</section>
+{% endif %}
+
+<section class="panel">
+    <h2>Mes souhaits</h2>
+
+    {% if participant.wishes is empty %}
+        {{ ui.empty('fa-list', 'Aucun souhait pour l’instant', 'Ajoute quelques idées dans le budget pour aider ton Santa.', null, null) }}
+    {% else %}
+        <div class="table-wrap" style="margin-bottom:1.25rem;">
+            <table class="data">
+                <thead><tr><th>#</th><th>Titre</th><th>Prix</th><th></th></tr></thead>
+                <tbody>
+                {% for w in participant.wishes %}
+                    <tr{% if editingWish and editingWish.id == w.id %} class="is-editing"{% endif %}>
+                        <td>{{ w.preferenceOrder }}</td>
+                        <td>
+                            <strong>{{ w.title }}</strong>
+                            {% if w.description %}<br><span class="help">{{ w.description }}</span>{% endif %}
+                        </td>
+                        <td>{{ w.estimatedPrice }} €</td>
+                        <td>
+                            <div class="table-actions">
+                                <a class="btn btn-ghost btn-sm" href="{{ path('participant_wish_edit', {token: participant.tokenSecret, id: w.id}) }}">Modifier</a>
+                                <form method="post" action="{{ path('participant_wish_delete', {token: participant.tokenSecret, id: w.id}) }}" onsubmit="return confirm('Supprimer ce souhait ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_wish_' ~ w.id) }}">
+                                    <button class="btn btn-danger btn-sm" type="submit">Supprimer</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+
+    {% if editingWish %}
+        <h3 class="form-section-title">Modifier le souhait</h3>
+        {{ form_start(wishForm, {action: path('participant_wish_edit', {token: participant.tokenSecret, id: editingWish.id})}) }}
+            {{ form_row(wishForm.title) }}
+            {{ form_row(wishForm.description) }}
+            <div class="form-cols form-cols-2">
+                {{ form_row(wishForm.estimatedPrice) }}
+                {{ form_row(wishForm.preferenceOrder) }}
+            </div>
+            {{ form_row(wishForm.url) }}
+            <div class="actions-row">
+                <button class="btn btn-primary" type="submit">Enregistrer</button>
+                <a class="btn btn-ghost" href="{{ path('participant_home', {token: participant.tokenSecret}) }}">Annuler</a>
+            </div>
+        {{ form_end(wishForm) }}
+    {% else %}
+        <h3 class="form-section-title">Ajouter un souhait</h3>
+        {{ form_start(wishForm, {action: path('participant_wish_new', {token: participant.tokenSecret})}) }}
+            {{ form_row(wishForm.title) }}
+            {{ form_row(wishForm.description) }}
+            <div class="form-cols form-cols-2">
+                {{ form_row(wishForm.estimatedPrice) }}
+                {{ form_row(wishForm.preferenceOrder) }}
+            </div>
+            {{ form_row(wishForm.url) }}
+            <div class="actions-row">
+                <button class="btn btn-primary" type="submit">Ajouter un souhait</button>
+            </div>
+        {{ form_end(wishForm) }}
+    {% endif %}
+</section>
+{% endblock %}

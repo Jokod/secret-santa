@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ subject }}</title>
+</head>
+<body style="margin:0;padding:0;background:#f3ebe1;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;color:#2a2420;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f3ebe1;padding:24px 12px;">
+        <tr>
+            <td align="center">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#fffdf9;border:1px solid #e0d6c8;border-radius:12px;overflow:hidden;">
+                    <tr>
+                        <td style="background:linear-gradient(135deg,#8b1e2d 0%,#1f4d3a 100%);color:#fff;padding:28px 24px;text-align:center;">
+                            <p style="margin:0 0 6px;font-size:13px;letter-spacing:0.12em;text-transform:uppercase;opacity:0.9;">Secret Santa Familial</p>
+                            <h1 style="margin:0;font-size:24px;line-height:1.25;font-weight:700;">{{ heading|default(subject) }}</h1>
+                            {% if subheading is defined and subheading %}
+                                <p style="margin:10px 0 0;font-size:15px;opacity:0.92;">{{ subheading }}</p>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:32px 28px;">
+                            <div style="font-size:16px;line-height:1.6;">{{ body|raw }}</div>
+
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:28px 0 0;background:#eef5f1;border:1px solid #cfe4d8;border-radius:10px;">
+                                <tr>
+                                    <td style="padding:16px 18px;font-size:14px;color:#1f4d3a;line-height:1.5;">
+                                        <strong>Confidentialité</strong><br>
+                                        Ton lien est personnel : ne le partage pas. L’identité du Santa reste secrète pour les participants.
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="background:#f7f3ee;padding:18px 24px;text-align:center;border-top:1px solid #e0d6c8;color:#6b5f56;font-size:13px;">
+                            <p style="margin:0 0 4px;font-weight:700;color:#2a2420;">Secret Santa Familial</p>
+                            <p style="margin:0;">Une édition, une famille, zéro spoiler.</p>
+                            <p style="margin:10px 0 0;font-size:11px;color:#9a8f84;">Email automatique : ne pas répondre.</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

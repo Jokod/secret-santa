@@ -1,0 +1,42 @@
+{% extends 'participant/base.html.twig' %}
+
+{% block title %}Messagerie Santa · {{ participant.name }}{% endblock %}
+
+{% block body %}
+{% import '_empty.html.twig' as ui %}
+
+<div class="page-header">
+    <div>
+        <h1>Messagerie avec ton Santa</h1>
+        <p class="page-lead">Échange anonyme : tu ne verras jamais qui t’offre un cadeau.</p>
+    </div>
+    <a class="btn btn-ghost" href="{{ path('participant_home', {token: participant.tokenSecret}) }}"><i class="fa-solid fa-arrow-left"></i> Mon espace</a>
+</div>
+
+{% include '_budget.html.twig' with {amount: settings.budgetMax} %}
+
+<section class="panel">
+    <div class="chat" style="margin-bottom:1.25rem;">
+        {% for m in thread %}
+            {% set mine = m.type.value == 'to_santa' %}
+            <article class="chat-bubble {{ mine ? 'chat-bubble-mine' : 'chat-bubble-theirs' }}{% if not mine and not m.read %} is-unread{% endif %}">
+                <div class="chat-bubble-meta">
+                    {% if mine %}Toi{% else %}Ton Santa{% endif %}
+                    · {{ m.createdAt|date('d/m/Y H:i') }}
+                </div>
+                <div class="chat-bubble-body">{{ m.body|nl2br }}</div>
+            </article>
+        {% else %}
+            {{ ui.empty('fa-comments', 'Aucun message pour l’instant', 'Ton Santa pourra te poser des questions ici.', null, null) }}
+        {% endfor %}
+    </div>
+
+    {{ form_start(form, {action: path('participant_messages_santa', {token: participant.tokenSecret})}) }}
+        {{ form_row(form.body) }}
+        <div class="actions-row">
+            <button class="btn btn-ghost" type="submit">Écrire à mon Santa</button>
+        </div>
+    {{ form_end(form) }}
+</section>
+<div data-controller="scroll-bottom" aria-hidden="true"></div>
+{% endblock %}

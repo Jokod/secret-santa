@@ -1,0 +1,109 @@
+{% use 'form_div_layout.html.twig' %}
+
+{%- block form_row -%}
+    {%- set row_class = 'form-row' ~ ((form.vars.errors|length > 0) ? ' has-error' : '') -%}
+    <div class="{{ row_class }}{% if row_attr.class is defined %} {{ row_attr.class }}{% endif %}"{% with {attr: row_attr} %}{{ block('attributes') }}{% endwith %}>
+        {{- form_label(form) -}}
+        {{- form_widget(form) -}}
+        {{- form_help(form) -}}
+        {{- form_errors(form) -}}
+    </div>
+{%- endblock form_row -%}
+
+{%- block form_label -%}
+    {% if label is not same as(false) -%}
+        {% if not compound -%}
+            {% set label_attr = label_attr|merge({'for': id}) %}
+        {%- endif -%}
+        {% if required -%}
+            {% set label_attr = label_attr|merge({'class': (label_attr.class|default('') ~ ' required')|trim}) %}
+        {%- endif -%}
+        <label{% with {attr: label_attr} %}{{ block('attributes') }}{% endwith %}>
+            {{- translation_domain is same as(false) ? label : label|trans(label_translation_parameters, translation_domain) -}}
+            {%- if required %} <span class="req" title="Obligatoire" aria-hidden="true">*</span>{%- endif -%}
+        </label>
+    {%- endif -%}
+{%- endblock form_label -%}
+
+{%- block form_help -%}
+    {%- if help is not empty -%}
+        <p id="{{ id }}_help" class="form-help">
+            {{- help|trans(help_translation_parameters, translation_domain) -}}
+        </p>
+    {%- endif -%}
+{%- endblock form_help -%}
+
+{%- block form_errors -%}
+    {%- if errors|length > 0 -%}
+        <ul class="form-errors" role="alert">
+            {%- for error in errors -%}
+                <li>{{ error.message }}</li>
+            {%- endfor -%}
+        </ul>
+    {%- endif -%}
+{%- endblock form_errors -%}
+
+{%- block form_widget_simple -%}
+    {%- if type is not defined or type != 'hidden' -%}
+        {%- set classes = 'form-control' ~ ((form.vars.errors|length > 0) ? ' is-invalid' : '') -%}
+        {%- set attr = attr|merge({'class': (attr.class|default('') ~ ' ' ~ classes)|trim}) -%}
+        {%- if help is not empty -%}
+            {%- set attr = attr|merge({'aria-describedby': (attr['aria-describedby']|default('') ~ ' ' ~ id ~ '_help')|trim}) -%}
+        {%- endif -%}
+        {%- if form.vars.errors|length > 0 -%}
+            {%- set attr = attr|merge({'aria-invalid': 'true'}) -%}
+        {%- endif -%}
+    {%- endif -%}
+    {{- parent() -}}
+{%- endblock form_widget_simple -%}
+
+{%- block textarea_widget -%}
+    {%- set classes = 'form-control' ~ ((form.vars.errors|length > 0) ? ' is-invalid' : '') -%}
+    {%- set attr = attr|merge({
+        'class': (attr.class|default('') ~ ' ' ~ classes)|trim,
+        'rows': attr.rows|default(4)
+    }) -%}
+    {%- if form.vars.errors|length > 0 -%}
+        {%- set attr = attr|merge({'aria-invalid': 'true'}) -%}
+    {%- endif -%}
+    {{- parent() -}}
+{%- endblock textarea_widget -%}
+
+{%- block choice_widget_collapsed -%}
+    {%- set classes = 'form-control' ~ ((form.vars.errors|length > 0) ? ' is-invalid' : '') -%}
+    {%- set attr = attr|merge({'class': (attr.class|default('') ~ ' ' ~ classes)|trim}) -%}
+    {%- if form.vars.errors|length > 0 -%}
+        {%- set attr = attr|merge({'aria-invalid': 'true'}) -%}
+    {%- endif -%}
+    {{- parent() -}}
+{%- endblock choice_widget_collapsed -%}
+
+{%- block checkbox_row -%}
+    <div class="form-row form-row-check{% if form.vars.errors|length > 0 %} has-error{% endif %}">
+        <label class="check-label" for="{{ id }}">
+            {{- form_widget(form) -}}
+            <span>{{- translation_domain is same as(false) ? label : label|trans({}, translation_domain) -}}</span>
+        </label>
+        {{- form_help(form) -}}
+        {{- form_errors(form) -}}
+    </div>
+{%- endblock checkbox_row -%}
+
+{%- block checkbox_widget -%}
+    {%- set attr = attr|merge({'class': (attr.class|default('') ~ ' form-check')|trim}) -%}
+    {{- parent() -}}
+{%- endblock checkbox_widget -%}
+
+{%- block form_start -%}
+    {%- set attr = attr|merge({
+        'class': (attr.class|default('') ~ ' santa-form')|trim,
+        'novalidate': 'novalidate'
+    }) -%}
+    {{- parent() -}}
+    {%- if form.vars.submitted and form.vars.errors|length > 0 -%}
+        <div class="form-errors-banner" role="alert">
+            <strong>Corrigez les erreurs ci-dessous.</strong>
+            {{- form_errors(form) -}}
+        </div>
+    {%- endif -%}
+{%- endblock form_start -%}

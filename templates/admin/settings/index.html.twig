@@ -1,0 +1,41 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Configuration · Secret Santa{% endblock %}
+
+{% block body %}
+<div class="page-header">
+    <div>
+        <h1>Configuration de l’édition</h1>
+        <p class="page-lead">Budget, date et modèles d’emails. Les variables {SANTA}, {TARGET}, {BUDGET} et {LINK} sont remplacées à l’envoi.</p>
+    </div>
+</div>
+
+{% if locked %}
+    <div class="locked-banner"><i class="fa-solid fa-lock"></i><span>Tirage actif : configuration en lecture seule jusqu’au reset.</span></div>
+{% endif %}
+
+{% include '_budget.html.twig' with {amount: settings.budgetMax} %}
+
+<div class="panel">
+    {{ form_start(form) }}
+        <div class="form-section">
+            <h2 class="form-section-title">Paramètres</h2>
+            <div class="form-cols form-cols-2">
+                {{ form_row(form.budgetMax) }}
+                {{ form_row(form.eventDate) }}
+            </div>
+        </div>
+        <div class="form-section">
+            <h2 class="form-section-title">Emails</h2>
+            {{ form_row(form.welcomeEmailTemplate) }}
+            {{ form_row(form.resultEmailTemplate) }}
+            {{ form_row(form.reminderEmailTemplate) }}
+        </div>
+        {% if not locked %}
+            <div class="actions-row">
+                <button class="btn btn-primary" type="submit">Enregistrer</button>
+            </div>
+        {% endif %}
+    {{ form_end(form) }}
+</div>
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Exclusions · Secret Santa{% endblock %}
+
+{% block body %}
+{% import '_empty.html.twig' as ui %}
+
+<div class="page-header">
+    <div>
+        <h1>Exclusions</h1>
+        <p class="page-lead">Empêchez une personne d’offrir à une autre. Utile pour les couples : cochez « mutuelle ».</p>
+    </div>
+</div>
+
+{% if locked %}
+    <div class="locked-banner"><i class="fa-solid fa-lock"></i><span>Tirage actif : exclusions figées jusqu’au reset.</span></div>
+{% endif %}
+
+{% if not locked %}
+    {% if participantCount < 2 %}
+        <div class="panel">
+            {{ ui.empty(
+                'fa-ban',
+                'Pas assez de participants',
+                'Ajoutez au moins deux participants avant de créer une exclusion.',
+                'Gérer les participants',
+                path('admin_participants')
+            ) }}
+        </div>
+    {% else %}
+        <div class="panel">
+            <h2 class="form-section-title">Nouvelle exclusion</h2>
+            {{ form_start(form) }}
+                <div class="form-cols form-cols-2">
+                    {{ form_row(form.source) }}
+                    {{ form_row(form.target) }}
+                </div>
+                {{ form_row(form.mutual) }}
+                <div class="actions-row">
+                    <button class="btn btn-primary" type="submit">Ajouter l’exclusion</button>
+                </div>
+            {{ form_end(form) }}
+        </div>
+    {% endif %}
+{% endif %}
+
+<div class="panel">
+    <h2>Exclusions enregistrées</h2>
+    {% if exclusions is empty %}
+        {{ ui.empty(
+            'fa-handshake',
+            'Aucune exclusion',
+            'Sans exclusion, tout le monde peut offrir à n’importe qui (sauf soi-même).',
+            null,
+            null
+        ) }}
+    {% else %}
+        <div class="table-wrap">
+            <table class="data">
+                <thead><tr><th>Source</th><th>Ne doit pas offrir à</th><th></th></tr></thead>
+                <tbody>
+                {% for e in exclusions %}
+                    <tr>
+                        <td>{{ e.source.name }}</td>
+                        <td>{{ e.target.name }}</td>
+                        <td>
+                            {% if not locked %}
+                            <div class="table-actions">
+                                <form method="post" action="{{ path('admin_exclusions_delete', {id: e.id}) }}" onsubmit="return confirm('Supprimer cette exclusion ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_exclusion_' ~ e.id) }}">
+                                    <button class="btn btn-danger btn-sm" type="submit">Supprimer</button>
+                                </form>
+                            </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

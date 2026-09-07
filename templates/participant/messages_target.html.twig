@@ -1,0 +1,42 @@
+{% extends 'participant/base.html.twig' %}
+
+{% block title %}Messagerie cible · {{ participant.name }}{% endblock %}
+
+{% block body %}
+{% import '_empty.html.twig' as ui %}
+
+<div class="page-header">
+    <div>
+        <h1>Messagerie avec ta cible</h1>
+        <p class="page-lead">Tu écris à {{ target.name }} en tant que Santa : ton identité reste secrète.</p>
+    </div>
+    <a class="btn btn-ghost" href="{{ path('participant_home', {token: participant.tokenSecret}) }}"><i class="fa-solid fa-arrow-left"></i> Mon espace</a>
+</div>
+
+{% include '_budget.html.twig' with {amount: settings.budgetMax, hint: 'À respecter pour le cadeau de ' ~ target.name} %}
+
+<section class="panel">
+    <div class="chat" style="margin-bottom:1.25rem;">
+        {% for m in thread %}
+            {% set mine = m.type.value == 'to_target' %}
+            <article class="chat-bubble {{ mine ? 'chat-bubble-mine' : 'chat-bubble-theirs' }}{% if not mine and not m.read %} is-unread{% endif %}">
+                <div class="chat-bubble-meta">
+                    {% if mine %}Toi (Santa){% else %}{{ target.name }}{% endif %}
+                    · {{ m.createdAt|date('d/m/Y H:i') }}
+                </div>
+                <div class="chat-bubble-body">{{ m.body|nl2br }}</div>
+            </article>
+        {% else %}
+            {{ ui.empty('fa-comments', 'Aucun message pour l’instant', 'Une question sur la taille, une préférence, un détail utile ?', null, null) }}
+        {% endfor %}
+    </div>
+
+    {{ form_start(form, {action: path('participant_messages_target', {token: participant.tokenSecret})}) }}
+        {{ form_row(form.body) }}
+        <div class="actions-row">
+            <button class="btn btn-secondary" type="submit">Écrire à ma cible</button>
+        </div>
+    {{ form_end(form) }}
+</section>
+<div data-controller="scroll-bottom" aria-hidden="true"></div>
+{% endblock %}

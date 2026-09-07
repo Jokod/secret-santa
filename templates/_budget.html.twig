@@ -1,0 +1,6 @@
+{# Expects: amount (float|int), optional label #}
+<aside class="budget-callout" aria-label="Budget de l’édition">
+    <span class="budget-callout-label">{{ label|default('Le budget') }}</span>
+    <strong class="budget-callout-value">{{ amount }}&nbsp;€</strong>
+    <span class="budget-callout-hint">{{ hint|default('Maximum par souhait') }}</span>
+</aside>

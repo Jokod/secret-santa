@@ -1,0 +1,24 @@
+{% extends 'base.html.twig' %}
+
+{% block brand_href %}{{ path('participant_home', {token: participant.tokenSecret}) }}{% endblock %}
+
+{% block header %}
+<header
+    class="site-header site-header-participant"
+    data-controller="elf-game"
+    data-elf-game-elf-url-value="{{ asset('images/game/elf.png') }}"
+    data-elf-game-music-url-value="{{ asset('audio/christmas-jingle.mp3') }}"
+    data-elf-game-catch-sound-url-value="{{ asset('audio/gift-catch.mp3') }}"
+    data-elf-game-gift-urls-value="{{ [
+        asset('images/game/gift-crimson.png'),
+        asset('images/game/gift-fir.png'),
+        asset('images/game/gift-gold.png'),
+        asset('images/game/gift-blue.png'),
+        asset('images/game/gift-berry.png'),
+    ]|json_encode|e('html_attr') }}"
+>
+    <a class="brand" href="{{ path('participant_home', {token: participant.tokenSecret}) }}" aria-label="Secret Santa Familial · mon espace">
+        <img class="brand-logo" src="{{ asset('images/logo.png') }}" alt="" width="200" height="56" decoding="async">
+    </a>
+</header>
+{% endblock %}

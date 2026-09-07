@@ -1,0 +1,11 @@
+{# Macro / partial pour états vides #}
+{% macro empty(icon, title, text, action_label, action_path) %}
+    <div class="empty-state" role="status">
+        <div class="empty-state-icon" aria-hidden="true"><i class="fa-solid {{ icon }}"></i></div>
+        <h3 class="empty-state-title">{{ title }}</h3>
+        {% if text %}<p class="empty-state-text">{{ text }}</p>{% endif %}
+        {% if action_label and action_path %}
+            <a class="btn btn-primary" href="{{ action_path }}">{{ action_label }}</a>
+        {% endif %}
+    </div>
+{% endmacro %}
