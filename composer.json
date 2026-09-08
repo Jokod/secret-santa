@@ -2,7 +2,7 @@
     "name": "jokod/secret-santa",
     "description": "Application Secret Santa familiale",
     "type": "project",
-    "license": "proprietary",
+    "license": "MIT",
     "minimum-stability": "stable",
     "prefer-stable": true,
     "require": {
@@ -100,7 +100,6 @@
     },
     "require-dev": {
         "dama/doctrine-test-bundle": "^8.6",
-        "deployer/deployer": "^8.0",
         "phpunit/phpunit": "^12.5",
         "symfony/browser-kit": "7.4.*",
         "symfony/css-selector": "7.4.*",

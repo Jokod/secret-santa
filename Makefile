@@ -20,7 +20,7 @@ DOMAIN        = santa
 INSTANCE      ?= staging
 
 .DEFAULT_GOAL = help
-.PHONY: help start stop clean status info docker-up docker-stop composer-install serve unserve proxy cc permissions fixtures migrate create-admin test-db test test-unit test-functional test-integration test-coverage ci deploy-staging deploy-production rollback-staging rollback-prod
+.PHONY: help start stop clean status info docker-up docker-stop composer-install serve unserve proxy cc permissions fixtures migrate create-admin test-db test test-unit test-functional test-integration test-coverage ci
 
 ## -- 🐝 The Symfony Makefile 🐝 -----------------------------------
 help: ## Outputs this help screen
@@ -134,16 +134,3 @@ ci: ## Local equivalent of GitHub Actions checks (needs MySQL test DB)
 	$(CONSOLE) lint:twig templates
 	$(CONSOLE) lint:container
 	$(MAKE) test
-
-## -- Deploy ✨ ------------------------------------------------------
-deploy-staging:
-	vendor/bin/dep deploy staging -vv
-
-deploy-production:
-	vendor/bin/dep deploy production -vv
-
-rollback-staging: ## Rollback STAGING
-	$(PHP) ./vendor/bin/dep rollback staging -vvv
-
-rollback-prod: ## Rollback PRODUCTION
-	$(PHP) ./vendor/bin/dep rollback production -vvv

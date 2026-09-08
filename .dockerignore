@@ -14,7 +14,6 @@ phpunit.dist.xml
 public/assets/
 public/bundles/
 assets/vendor/
-deploy.php
 compose.yaml
 compose.prod.yaml
 *.md
