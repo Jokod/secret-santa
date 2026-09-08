@@ -47,6 +47,7 @@
             <div class="flash flash-{{ label }}" role="{{ label in ['danger', 'error'] ? 'alert' : 'status' }}">
                 {% if label == 'success' %}<i class="fa-solid fa-circle-check"></i>
                 {% elseif label in ['danger', 'error'] %}<i class="fa-solid fa-circle-exclamation"></i>
+                {% elseif label == 'warning' %}<i class="fa-solid fa-triangle-exclamation"></i>
                 {% else %}<i class="fa-solid fa-circle-info"></i>{% endif %}
                 <span>{{ message }}</span>
             </div>

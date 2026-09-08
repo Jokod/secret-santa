@@ -14,7 +14,7 @@
     </div>
 </div>
 
-{% include '_budget.html.twig' with {amount: settings.budgetMax} %}
+{% include '_budget.html.twig' with {amount: settings.budgetMax, hint: 'Maximum recommandé par souhait'} %}
 
 {% if locked %}
 <section class="panel">
@@ -71,7 +71,15 @@
                             <strong>{{ w.title }}</strong>
                             {% if w.description %}<br><span class="help">{{ w.description }}</span>{% endif %}
                         </td>
-                        <td>{{ w.estimatedPrice }} €</td>
+                        <td>
+                            {{ w.estimatedPrice }} €
+                            {% if w.estimatedPrice > settings.budgetMax %}
+                                <span class="wish-over-budget" title="Dépassement du budget recommandé ({{ settings.budgetMax }} €)">
+                                    <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                                    <span class="visually-hidden">Dépassement du budget</span>
+                                </span>
+                            {% endif %}
+                        </td>
                         <td>{% if w.url %}<a href="{{ w.url }}" target="_blank" rel="noopener noreferrer">Voir</a>{% else %}<span class="help">-</span>{% endif %}</td>
                     </tr>
                 {% endfor %}
@@ -91,7 +99,7 @@
     <h2>Mes souhaits</h2>
 
     {% if participant.wishes is empty %}
-        {{ ui.empty('fa-list', 'Aucun souhait pour l’instant', 'Ajoute quelques idées dans le budget pour aider ton Santa.', null, null) }}
+        {{ ui.empty('fa-list', 'Aucun souhait pour l’instant', 'Ajoute quelques idées pour aider ton Santa.', null, null) }}
     {% else %}
         <div class="table-wrap" style="margin-bottom:1.25rem;">
             <table class="data">
@@ -104,7 +112,15 @@
                             <strong>{{ w.title }}</strong>
                             {% if w.description %}<br><span class="help">{{ w.description }}</span>{% endif %}
                         </td>
-                        <td>{{ w.estimatedPrice }} €</td>
+                        <td>
+                            {{ w.estimatedPrice }} €
+                            {% if w.estimatedPrice > settings.budgetMax %}
+                                <span class="wish-over-budget" title="Dépassement du budget recommandé ({{ settings.budgetMax }} €)">
+                                    <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                                    <span class="visually-hidden">Dépassement du budget</span>
+                                </span>
+                            {% endif %}
+                        </td>
                         <td>
                             <div class="table-actions">
                                 <a class="btn btn-ghost btn-sm" href="{{ path('participant_wish_edit', {token: participant.tokenSecret, id: w.id}) }}">Modifier</a>
@@ -121,13 +137,19 @@
         </div>
     {% endif %}
 
+    {% set wishFormAttr = {
+        'data-controller': 'wish-budget',
+        'data-wish-budget-budget-max-value': settings.budgetMax,
+        'data-action': 'submit->wish-budget#confirmIfOverBudget'
+    } %}
+
     {% if editingWish %}
         <h3 class="form-section-title">Modifier le souhait</h3>
-        {{ form_start(wishForm, {action: path('participant_wish_edit', {token: participant.tokenSecret, id: editingWish.id})}) }}
+        {{ form_start(wishForm, {action: path('participant_wish_edit', {token: participant.tokenSecret, id: editingWish.id}), attr: wishFormAttr}) }}
             {{ form_row(wishForm.title) }}
             {{ form_row(wishForm.description) }}
             <div class="form-cols form-cols-2">
-                {{ form_row(wishForm.estimatedPrice) }}
+                {% include 'participant/_wish_price_field.html.twig' %}
                 {{ form_row(wishForm.preferenceOrder) }}
             </div>
             {{ form_row(wishForm.url) }}
@@ -138,11 +160,11 @@
         {{ form_end(wishForm) }}
     {% else %}
         <h3 class="form-section-title">Ajouter un souhait</h3>
-        {{ form_start(wishForm, {action: path('participant_wish_new', {token: participant.tokenSecret})}) }}
+        {{ form_start(wishForm, {action: path('participant_wish_new', {token: participant.tokenSecret}), attr: wishFormAttr}) }}
             {{ form_row(wishForm.title) }}
             {{ form_row(wishForm.description) }}
             <div class="form-cols form-cols-2">
-                {{ form_row(wishForm.estimatedPrice) }}
+                {% include 'participant/_wish_price_field.html.twig' %}
                 {{ form_row(wishForm.preferenceOrder) }}
             </div>
             {{ form_row(wishForm.url) }}

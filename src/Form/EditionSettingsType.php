@@ -20,7 +20,7 @@ final class EditionSettingsType extends AbstractType
             ->add('budgetMax', NumberType::class, [
                 'label' => 'Budget max (€)',
                 'scale' => 2,
-                'help' => 'Plafond partagé pour chaque souhait.',
+                'help' => 'Budget conseillé par souhait (un dépassement reste possible).',
                 'disabled' => $disabled,
                 'attr' => ['min' => 1, 'step' => '0.01', 'inputmode' => 'decimal'],
             ])

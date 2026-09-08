@@ -1,21 +1,56 @@
-services: 
+# Production — docker compose -f compose.prod.yaml --env-file .env.local up -d
+# Image publiée par le workflow Release : ghcr.io/jokod/secret-santa
 
-  database: 
+services:
+  app:
+    image: ${APP_IMAGE:-ghcr.io/jokod/secret-santa}:${APP_IMAGE_TAG:-latest}
+    container_name: santa_app_${APP_INSTANCE:-prod}
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8080}:80"
+    environment:
+      APP_ENV: prod
+      APP_DEBUG: "0"
+      SERVER_NAME: ":80"
+      APP_SECRET: ${APP_SECRET:?APP_SECRET required}
+      DATABASE_URL: mysql://root:${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD required}@database:3306/${MYSQL_DATABASE:-santa}?serverVersion=8.0&charset=utf8mb4
+      DEFAULT_URI: ${DEFAULT_URI:?DEFAULT_URI required}
+      MAILER_DSN: ${MAILER_DSN:-null://null}
+      MESSENGER_TRANSPORT_DSN: ${MESSENGER_TRANSPORT_DSN:-doctrine://default?auto_setup=0}
+      CADDY_GLOBAL_OPTIONS: |
+        servers {
+          trusted_proxies static private_ranges
+        }
+    volumes:
+      - app_var_log:/app/var/log:rw
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - santa_network
+
+  database:
     image: mysql:8.0
-    container_name: santa_database_${APP_INSTANCE}
+    container_name: santa_database_${APP_INSTANCE:-prod}
     restart: always
     ports:
-      - 6950:3306
+      - "${MYSQL_PORT:-6950}:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD required}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-santa}
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
       - santa_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
 
 volumes:
   mysql_data:
+  app_var_log:
 
 networks:
   santa_network:

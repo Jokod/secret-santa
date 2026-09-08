@@ -13,7 +13,7 @@ set('repository', 'git@github.com:Jokod/secret-santa.git');
 set('shared_dirs', ['var/log']);
 set('shared_files', ['.env.local']);
 set('copy_dirs', ['vendor']);
-set('clear_paths', ['tests', 'docker*', 'deploy*', 'README.md', '.gitlab-ci.yml', 'data']);
+set('clear_paths', ['tests', 'docker*', 'deploy*', 'README.md', '.github', '.gitlab-ci.yml', 'data', 'Dockerfile', '.dockerignore']);
 
 set('writable_dirs', ['var/log', 'var/cache']);
 set('writable_mode', 'acl');

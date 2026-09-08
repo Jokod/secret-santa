@@ -5,7 +5,6 @@ namespace App\Controller;
 use App\Entity\Participant;
 use App\Entity\Wish;
 use App\Enum\MessageType as MessageDirection;
-use App\Exception\BudgetExceededException;
 use App\Form\MessageFormType;
 use App\Form\WishType;
 use App\Repository\EditionSettingsRepository;
@@ -15,7 +14,6 @@ use App\Service\MessageService;
 use App\Service\WishBudgetValidator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -52,18 +50,11 @@ final class ParticipantSpaceController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            try {
-                $this->budgetValidator->assertWithinBudget($wish->getEstimatedPrice(), $settings->getBudgetMax());
-            } catch (BudgetExceededException $e) {
-                $form->get('estimatedPrice')->addError(new FormError($e->getMessage()));
-
-                return $this->renderHome($participant, wishForm: $form);
-            }
-
             $participant->addWish($wish);
             $this->em->persist($wish);
             $this->em->flush();
             $this->addFlash('success', 'Souhait ajouté.');
+            $this->flashOverBudgetWarning($wish->getEstimatedPrice(), $settings->getBudgetMax());
 
             return $this->redirectToRoute('participant_home', ['token' => $token]);
         }
@@ -84,16 +75,9 @@ final class ParticipantSpaceController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            try {
-                $this->budgetValidator->assertWithinBudget($wish->getEstimatedPrice(), $settings->getBudgetMax());
-            } catch (BudgetExceededException $e) {
-                $form->get('estimatedPrice')->addError(new FormError($e->getMessage()));
-
-                return $this->renderHome($participant, wishForm: $form, editingWish: $wish);
-            }
-
             $this->em->flush();
             $this->addFlash('success', 'Souhait modifié.');
+            $this->flashOverBudgetWarning($wish->getEstimatedPrice(), $settings->getBudgetMax());
 
             return $this->redirectToRoute('participant_home', ['token' => $token]);
         }
@@ -248,6 +232,18 @@ final class ParticipantSpaceController extends AbstractController
             'unreadFromTarget' => $unread['fromTarget'],
             'unreadFromSanta' => $unread['fromSanta'],
         ]);
+    }
+
+    private function flashOverBudgetWarning(float $price, float $budgetMax): void
+    {
+        if (!$this->budgetValidator->isOverBudget($price, $budgetMax)) {
+            return;
+        }
+
+        $this->addFlash('warning', sprintf(
+            'Attention : ce souhait dépasse le budget de %s €.',
+            $this->budgetValidator->formatAmount($budgetMax)
+        ));
     }
 
     private function requireParticipant(string $token): Participant

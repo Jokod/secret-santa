@@ -20,7 +20,7 @@ DOMAIN        = santa
 INSTANCE      ?= staging
 
 .DEFAULT_GOAL = help
-.PHONY: help start stop clean status info docker-up docker-stop composer-install serve unserve proxy cc permissions fixtures migrate create-admin test-db test test-unit test-functional test-integration test-coverage deploy-staging deploy-production rollback-staging rollback-prod
+.PHONY: help start stop clean status info docker-up docker-stop composer-install serve unserve proxy cc permissions fixtures migrate create-admin test-db test test-unit test-functional test-integration test-coverage ci deploy-staging deploy-production rollback-staging rollback-prod
 
 ## -- 🐝 The Symfony Makefile 🐝 -----------------------------------
 help: ## Outputs this help screen
@@ -127,6 +127,14 @@ test-coverage: test-db ## Generate coverage in var/coverage - MUST be 100%
 	@echo "Dashboard HTML : $(CURDIR)/var/coverage/html/index.html"
 	@echo "Clover XML     : $(CURDIR)/var/coverage/clover.xml"
 	@echo "Ouvrir         : xdg-open var/coverage/html/index.html"
+
+## -- CI ✨ ------------------------------------------------------------
+ci: ## Local equivalent of GitHub Actions checks (needs MySQL test DB)
+	$(COMPOSER) validate --strict --no-check-publish
+	$(CONSOLE) lint:yaml config translations --parse-tags
+	$(CONSOLE) lint:twig templates
+	$(CONSOLE) lint:container
+	$(MAKE) test
 
 ## -- Deploy ✨ ------------------------------------------------------
 deploy-staging:

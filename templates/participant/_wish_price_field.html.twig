@@ -1,0 +1,24 @@
+{# Expects: wishForm (FormView), settings #}
+{% set priceValue = wishForm.estimatedPrice.vars.value %}
+<div class="form-row{% if wishForm.estimatedPrice.vars.errors|length > 0 %} has-error{% endif %}">
+    {{ form_label(wishForm.estimatedPrice) }}
+    <div class="wish-price-input-wrap">
+        {{ form_widget(wishForm.estimatedPrice, {
+            attr: {
+                'data-wish-budget-target': 'price',
+                'data-action': 'input->wish-budget#sync change->wish-budget#sync'
+            }
+        }) }}
+        <span
+            class="wish-over-budget wish-over-budget-field"
+            data-wish-budget-target="icon"
+            title="Dépassement du budget recommandé"
+            {% if priceValue is null or priceValue is same as('') or priceValue <= settings.budgetMax %}hidden{% endif %}
+        >
+            <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+            <span class="visually-hidden">Dépassement du budget</span>
+        </span>
+    </div>
+    {{ form_help(wishForm.estimatedPrice) }}
+    {{ form_errors(wishForm.estimatedPrice) }}
+</div>

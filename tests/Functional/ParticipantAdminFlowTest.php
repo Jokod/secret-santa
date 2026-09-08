@@ -61,7 +61,7 @@ final class ParticipantAdminFlowTest extends AppWebTestCase
         self::assertSelectorTextContains('table', 'Livre');
     }
 
-    public function testWishAboveBudgetIsRejected(): void
+    public function testWishAboveBudgetIsAcceptedWithWarning(): void
     {
         $this->ensureSettings(50);
         $participant = $this->createParticipant('Carla', 'carla@example.com');
@@ -73,10 +73,12 @@ final class ParticipantAdminFlowTest extends AppWebTestCase
             'wish[preferenceOrder]' => '1',
         ]);
         $this->client->submit($form);
-        self::assertResponseStatusCodeSame(422);
-        self::assertSelectorExists('.form-errors');
-        self::assertSelectorTextContains('.form-errors', 'budget');
-        self::assertSelectorNotExists('table.data tbody tr');
+        self::assertResponseRedirects();
+        $crawler = $this->client->followRedirect();
+        self::assertSelectorTextContains('table', 'Trop cher');
+        self::assertSelectorExists('.wish-over-budget');
+        self::assertSelectorExists('.flash-warning');
+        self::assertSelectorTextContains('.flash-warning', 'dépasse le budget');
     }
 
     public function testParticipantNeverSeesOwnSantaName(): void

@@ -2,17 +2,15 @@
 
 namespace App\Service;
 
-use App\Exception\BudgetExceededException;
-
 final class WishBudgetValidator
 {
-    public function assertWithinBudget(float $price, float $budgetMax): void
+    public function isOverBudget(float $price, float $budgetMax): bool
     {
-        if ($price > $budgetMax) {
-            throw new BudgetExceededException(sprintf(
-                'Le prix estimé dépasse le budget maximum de %s €.',
-                rtrim(rtrim(number_format($budgetMax, 2, '.', ''), '0'), '.')
-            ));
-        }
+        return $price > $budgetMax;
+    }
+
+    public function formatAmount(float $amount): string
+    {
+        return rtrim(rtrim(number_format($amount, 2, '.', ''), '0'), '.') ?: '0';
     }
 }

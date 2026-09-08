@@ -93,7 +93,7 @@ final class ParticipantSpaceControllerCoverageTest extends AppWebTestCase
         self::assertResponseStatusCodeSame(404);
     }
 
-    public function testEditWishAboveBudget(): void
+    public function testEditWishAboveBudgetIsAccepted(): void
     {
         $this->ensureSettings(50);
         $p = $this->createParticipant('WishBudgetEdit', 'wishbudgetedit@example.com');
@@ -108,14 +108,17 @@ final class ParticipantSpaceControllerCoverageTest extends AppWebTestCase
             'wish[preferenceOrder]' => '1',
         ]);
         $this->client->submit($form);
-        self::assertResponseStatusCodeSame(422);
-        self::assertSelectorTextContains('.form-section-title', 'Modifier le souhait');
+        self::assertResponseRedirects();
+        $this->client->followRedirect();
+        self::assertSelectorTextContains('table', 'Trop cher');
+        self::assertSelectorExists('.wish-over-budget');
+        self::assertSelectorExists('.flash-warning');
 
         $this->em->clear();
-        $unchanged = $this->em->find(Wish::class, $wish->getId());
-        self::assertNotNull($unchanged);
-        self::assertSame('Ok', $unchanged->getTitle());
-        self::assertSame(10.0, $unchanged->getEstimatedPrice());
+        $updated = $this->em->find(Wish::class, $wish->getId());
+        self::assertNotNull($updated);
+        self::assertSame('Trop cher', $updated->getTitle());
+        self::assertSame(80.0, $updated->getEstimatedPrice());
     }
 
     public function testEditWishAfterDraw(): void

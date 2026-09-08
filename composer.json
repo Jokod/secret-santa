@@ -1,4 +1,6 @@
 {
+    "name": "jokod/secret-santa",
+    "description": "Application Secret Santa familiale",
     "type": "project",
     "license": "proprietary",
     "minimum-stability": "stable",

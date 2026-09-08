@@ -39,7 +39,7 @@ final class WishType extends AbstractType
             ->add('estimatedPrice', NumberType::class, [
                 'label' => 'Prix estimé (€)',
                 'scale' => 2,
-                'help' => sprintf('Doit rester dans le budget (max %s €).', rtrim(rtrim(number_format((float) $options['budget_max'], 2, '.', ''), '0'), '.') ?: '50'),
+                'help' => sprintf('Budget conseillé : max %s € (dépassement possible avec avertissement).', rtrim(rtrim(number_format((float) $options['budget_max'], 2, '.', ''), '0'), '.') ?: '50'),
                 'attr' => ['min' => 0, 'step' => '0.01', 'inputmode' => 'decimal'],
             ])
             ->add('preferenceOrder', IntegerType::class, [
