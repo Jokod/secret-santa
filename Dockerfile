@@ -33,6 +33,7 @@ RUN mkdir -p var/cache var/log \
        DATABASE_URL="mysql://root:root@database:3306/santa?serverVersion=8.0&charset=utf8mb4" \
        DEFAULT_URI=https://localhost \
        MAILER_DSN=null://null \
+       MAIL_FROM=noreply@santa.local \
        MESSENGER_TRANSPORT_DSN=in-memory:// \
     && php bin/console importmap:install --no-interaction \
     && php bin/console asset-map:compile --no-interaction \

@@ -23,6 +23,7 @@ jobs:
       DATABASE_URL: mysql://root:root@127.0.0.1:3306/santa_test?serverVersion=8.0&charset=utf8mb4
       DEFAULT_URI: http://localhost
       MAILER_DSN: null://null
+      MAIL_FROM: noreply@santa.test
       MESSENGER_TRANSPORT_DSN: in-memory://
     steps:
       - uses: actions/checkout@v5
@@ -78,6 +79,7 @@ jobs:
       DATABASE_URL: mysql://root:root@127.0.0.1:3306/santa_test?serverVersion=8.0&charset=utf8mb4
       DEFAULT_URI: http://localhost
       MAILER_DSN: null://null
+      MAIL_FROM: noreply@santa.test
       MESSENGER_TRANSPORT_DSN: in-memory://
     steps:
       - uses: actions/checkout@v5

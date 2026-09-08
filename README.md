@@ -111,7 +111,7 @@ Modèle d’environnement : [`.env.prod.dist`](.env.prod.dist).
 
 ```bash
 cp .env.prod.dist .env.local
-# Renseigner APP_SECRET, MYSQL_ROOT_PASSWORD, DEFAULT_URI, MAILER_DSN
+# Renseigner APP_SECRET, MYSQL_ROOT_PASSWORD, DEFAULT_URI, MAILER_DSN, MAIL_FROM
 
 docker compose -f compose.prod.yaml --env-file .env.local pull
 docker compose -f compose.prod.yaml --env-file .env.local up -d

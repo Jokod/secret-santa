@@ -16,6 +16,7 @@ services:
       DATABASE_URL: mysql://root:${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD required}@database:3306/${MYSQL_DATABASE:-santa}?serverVersion=8.0&charset=utf8mb4
       DEFAULT_URI: ${DEFAULT_URI:?DEFAULT_URI required}
       MAILER_DSN: ${MAILER_DSN:-null://null}
+      MAIL_FROM: ${MAIL_FROM:-noreply@santa.local}
       MESSENGER_TRANSPORT_DSN: ${MESSENGER_TRANSPORT_DSN:-doctrine://default?auto_setup=0}
       CADDY_GLOBAL_OPTIONS: |
         servers {

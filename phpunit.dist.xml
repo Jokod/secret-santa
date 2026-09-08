@@ -17,6 +17,7 @@
         <server name="SHELL_VERBOSITY" value="-1" />
         <env name="KERNEL_CLASS" value="App\Kernel" />
         <env name="MAILER_DSN" value="null://null" />
+        <env name="MAIL_FROM" value="noreply@santa.test" />
         <env name="MESSENGER_TRANSPORT_DSN" value="in-memory://" />
         <env name="DEFAULT_URI" value="http://localhost" />
         <env name="APP_SECRET" value="test_secret_not_for_production" />

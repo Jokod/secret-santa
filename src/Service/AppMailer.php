@@ -18,7 +18,7 @@ final class AppMailer
         private readonly MailerInterface $mailer,
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly EditionSettingsRepository $settingsRepository,
-        private readonly string $mailFrom = 'noreply@santa.local',
+        private readonly string $mailFrom,
     ) {
     }
 

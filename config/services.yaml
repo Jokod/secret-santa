@@ -1,8 +1,5 @@
 # yaml-language-server: $schema=../vendor/symfony/dependency-injection/Loader/schema/services.schema.json
 
-parameters:
-    app.mail_from: 'noreply@santa.local'
-
 services:
     _defaults:
         autowire: true
@@ -13,4 +10,4 @@ services:
 
     App\Service\AppMailer:
         arguments:
-            $mailFrom: '%app.mail_from%'
+            $mailFrom: '%env(MAIL_FROM)%'
