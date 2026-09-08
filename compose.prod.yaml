@@ -1,6 +1,16 @@
 # Production — docker compose -f compose.prod.yaml --env-file .env.local up -d
 # Image : ghcr.io/jokod/secret-santa
 
+x-app-environment: &app-environment
+  APP_ENV: prod
+  APP_DEBUG: "0"
+  APP_SECRET: ${APP_SECRET:?APP_SECRET required}
+  DATABASE_URL: mysql://root:${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD required}@database:3306/${MYSQL_DATABASE:-santa}?serverVersion=8.0&charset=utf8mb4
+  DEFAULT_URI: ${DEFAULT_URI:?DEFAULT_URI required}
+  MAILER_DSN: ${MAILER_DSN:-null://null}
+  MAIL_FROM: ${MAIL_FROM:-noreply@santa.local}
+  MESSENGER_TRANSPORT_DSN: ${MESSENGER_TRANSPORT_DSN:-doctrine://default?auto_setup=0}
+
 services:
   app:
     image: ${APP_IMAGE:-ghcr.io/jokod/secret-santa}:${APP_IMAGE_TAG:-latest}
@@ -9,15 +19,8 @@ services:
     ports:
       - "${APP_PORT:-8080}:80"
     environment:
-      APP_ENV: prod
-      APP_DEBUG: "0"
+      <<: *app-environment
       SERVER_NAME: ":80"
-      APP_SECRET: ${APP_SECRET:?APP_SECRET required}
-      DATABASE_URL: mysql://root:${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD required}@database:3306/${MYSQL_DATABASE:-santa}?serverVersion=8.0&charset=utf8mb4
-      DEFAULT_URI: ${DEFAULT_URI:?DEFAULT_URI required}
-      MAILER_DSN: ${MAILER_DSN:-null://null}
-      MAIL_FROM: ${MAIL_FROM:-noreply@santa.local}
-      MESSENGER_TRANSPORT_DSN: ${MESSENGER_TRANSPORT_DSN:-doctrine://default?auto_setup=0}
       CADDY_GLOBAL_OPTIONS: |
         servers {
           trusted_proxies static private_ranges
@@ -27,6 +30,28 @@ services:
     depends_on:
       database:
         condition: service_healthy
+
+  worker:
+    image: ${APP_IMAGE:-ghcr.io/jokod/secret-santa}:${APP_IMAGE_TAG:-latest}
+    container_name: santa_worker_${APP_INSTANCE:-prod}
+    restart: unless-stopped
+    environment:
+      <<: *app-environment
+    command:
+      - php
+      - bin/console
+      - messenger:consume
+      - async
+      - --time-limit=3600
+      - --memory-limit=128M
+      - -vv
+    volumes:
+      - app_var_log:/app/var/log:rw
+    depends_on:
+      database:
+        condition: service_healthy
+      app:
+        condition: service_started
 
   database:
     image: mysql:8.0

@@ -124,6 +124,8 @@ Au démarrage du conteneur `app` :
 3. `assets:install` + `asset-map:compile`  
 4. `cache:warmup`  
 
+Le conteneur `worker` consomme la file Messenger (`async`) pour envoyer les emails en arrière-plan (`messenger:consume async`).
+
 Image :
 
 ```bash
@@ -154,7 +156,7 @@ src/                  # Domaine, contrôleurs, services
 templates/
 tests/
 compose.yaml          # Dev (MySQL, PhpMyAdmin, Mailhog)
-compose.prod.yaml     # Prod (app + MySQL)
+compose.prod.yaml     # Prod (app + worker Messenger + MySQL)
 ```
 
 ## Documentation produit
