@@ -7,7 +7,7 @@
     <a href="{{ path('admin_settings') }}">Configuration</a>
     <a href="{{ path('admin_draw') }}">Tirage</a>
     <a href="{{ path('admin_messages') }}">Messages</a>
-    <form class="logout-form" action="{{ path('admin_logout') }}" method="post">
+    <form class="logout-form" action="{{ path('admin_logout') }}" method="post" data-turbo="false">
         <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
         <button class="btn-logout" type="submit">Déconnexion</button>
     </form>

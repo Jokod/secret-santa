@@ -7,7 +7,7 @@
 {% block nav %}
     {% if is_granted('ROLE_ADMIN') %}
         <a href="{{ path('admin_dashboard') }}">Admin</a>
-        <form class="logout-form" action="{{ path('admin_logout') }}" method="post">
+        <form class="logout-form" action="{{ path('admin_logout') }}" method="post" data-turbo="false">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
             <button class="btn-logout" type="submit">Déconnexion</button>
         </form>

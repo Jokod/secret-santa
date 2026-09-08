@@ -14,7 +14,7 @@
         </div>
     {% endif %}
 
-    <form method="post" class="santa-form" novalidate>
+    <form method="post" class="santa-form" novalidate data-turbo="false">
         <div class="form-row">
             <label class="required" for="username">Email <span class="req" aria-hidden="true">*</span></label>
             <input class="form-control" id="username" type="email" name="_username" value="{{ last_username }}" required autofocus autocomplete="username" placeholder="orga@exemple.fr">

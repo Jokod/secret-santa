@@ -124,7 +124,7 @@ Au démarrage du conteneur `app` :
 3. `assets:install` + `asset-map:compile`  
 4. `cache:warmup`  
 
-Le conteneur `worker` consomme la file Messenger (`async`) pour envoyer les emails en arrière-plan (`messenger:consume async`).
+Le conteneur `worker` reste up et relance en boucle le process `messenger:consume async` (emails en arrière-plan).
 
 Image :
 

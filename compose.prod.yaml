@@ -38,13 +38,13 @@ services:
     environment:
       <<: *app-environment
     command:
-      - php
-      - bin/console
-      - messenger:consume
-      - async
-      - --time-limit=3600
-      - --memory-limit=128M
-      - -vv
+      - sh
+      - -c
+      - |
+        while true; do
+          php bin/console messenger:consume async --time-limit=3600 --memory-limit=128M -vv || true
+          sleep 1
+        done
     volumes:
       - app_var_log:/app/var/log:rw
     depends_on:
