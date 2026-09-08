@@ -11,3 +11,4 @@ services:
     App\Service\AppMailer:
         arguments:
             $mailFrom: '%env(MAIL_FROM)%'
+            $defaultUri: '%env(DEFAULT_URI)%'

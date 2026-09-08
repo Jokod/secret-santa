@@ -52,7 +52,7 @@ final class DrawServiceTest extends TestCase
             $messageRepository,
             $em,
             new DrawAlgorithm(seed: 42),
-            new AppMailer($mailer, $urlGenerator, $settingsRepo, 'noreply@santa.test'),
+            new AppMailer($mailer, $urlGenerator, $settingsRepo, 'noreply@santa.test', 'https://santa.test'),
         );
     }
 

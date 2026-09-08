@@ -36,13 +36,14 @@ final class AppMailerTest extends TestCase
         $settingsRepository->method('getSettings')->willReturn($this->settings);
 
         $urlGenerator = $this->createStub(UrlGeneratorInterface::class);
-        $urlGenerator->method('generate')->willReturn('https://santa.test/p/token');
+        $urlGenerator->method('generate')->willReturn('/p/token');
 
         $this->appMailer = new AppMailer(
             $this->mailer,
             $urlGenerator,
             $settingsRepository,
             'noreply@santa.test',
+            'https://santa.test',
         );
     }
 

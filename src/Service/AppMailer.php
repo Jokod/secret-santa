@@ -19,6 +19,7 @@ final class AppMailer
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly EditionSettingsRepository $settingsRepository,
         private readonly string $mailFrom,
+        private readonly string $defaultUri,
     ) {
     }
 
@@ -113,11 +114,13 @@ final class AppMailer
 
     private function participantLink(Participant $participant): string
     {
-        return $this->urlGenerator->generate(
+        $path = $this->urlGenerator->generate(
             'participant_home',
             ['token' => $participant->getTokenSecret()],
-            UrlGeneratorInterface::ABSOLUTE_URL
+            UrlGeneratorInterface::ABSOLUTE_PATH,
         );
+
+        return rtrim($this->defaultUri, '/').$path;
     }
 
     private function formatBudget(EditionSettings $settings): string

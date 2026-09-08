@@ -3,6 +3,7 @@ twig:
     form_themes: ['form/santa_theme.html.twig']
     globals:
         app_name: 'Secret Santa Familial'
+        default_uri: '%env(DEFAULT_URI)%'
 
 when@test:
     twig:

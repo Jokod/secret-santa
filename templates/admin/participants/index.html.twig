@@ -48,7 +48,7 @@
                 <td>{{ p.email }}</td>
                 <td>{{ p.wishes|length }}</td>
                 <td>
-                    {% set personalLink = url('participant_home', {token: p.tokenSecret}) %}
+                    {% set personalLink = default_uri|trim('/', 'right') ~ path('participant_home', {token: p.tokenSecret}) %}
                     <div class="link-cell">
                         <code class="code-link">{{ personalLink }}</code>
                         <div class="link-cell-actions">

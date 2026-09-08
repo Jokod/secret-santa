@@ -35,7 +35,7 @@ final class MessageServiceTest extends TestCase
 
         $this->service = new MessageService(
             $this->em,
-            new AppMailer($this->mailer, $urlGenerator, $settingsRepo, 'noreply@santa.test'),
+            new AppMailer($this->mailer, $urlGenerator, $settingsRepo, 'noreply@santa.test', 'https://santa.test'),
         );
     }
 
