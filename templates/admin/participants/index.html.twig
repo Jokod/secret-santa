@@ -36,6 +36,7 @@
             <tr>
                 <th>Nom</th>
                 <th>Email</th>
+                <th>Souhaits</th>
                 <th>Lien personnel</th>
                 <th></th>
             </tr>
@@ -45,6 +46,7 @@
             <tr>
                 <td><strong>{{ p.name }}</strong></td>
                 <td>{{ p.email }}</td>
+                <td>{{ p.wishes|length }}</td>
                 <td>
                     {% set personalLink = url('participant_home', {token: p.tokenSecret}) %}
                     <div class="link-cell">

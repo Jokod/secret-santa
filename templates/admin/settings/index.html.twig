@@ -6,7 +6,7 @@
 <div class="page-header">
     <div>
         <h1>Configuration de l’édition</h1>
-        <p class="page-lead">Budget, date et modèles d’emails. Les variables {SANTA}, {TARGET}, {BUDGET} et {LINK} sont remplacées à l’envoi.</p>
+        <p class="page-lead">Budget, dates et modèles d’emails. Les variables {SANTA}, {TARGET}, {BUDGET} et {LINK} sont remplacées à l’envoi.</p>
     </div>
 </div>
 
@@ -22,7 +22,10 @@
             <h2 class="form-section-title">Paramètres</h2>
             <div class="form-cols form-cols-2">
                 {{ form_row(form.budgetMax) }}
+            </div>
+            <div class="form-cols form-cols-2">
                 {{ form_row(form.eventDate) }}
+                {{ form_row(form.drawDate) }}
             </div>
         </div>
         <div class="form-section">

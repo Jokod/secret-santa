@@ -27,6 +27,8 @@ class ParticipantRepository extends ServiceEntityRepository
     public function findAllOrderedByName(): array
     {
         return $this->createQueryBuilder('p')
+            ->leftJoin('p.wishes', 'w')
+            ->addSelect('w')
             ->orderBy('p.name', 'ASC')
             ->getQuery()
             ->getResult();

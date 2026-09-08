@@ -16,6 +16,7 @@ final class SettingsControllerCoverageTest extends AppWebTestCase
         $crawler = $this->client->request('GET', '/admin/settings');
         $this->client->submit($crawler->selectButton('Enregistrer')->form([
             'edition_settings[budgetMax]' => '99.5',
+            'edition_settings[drawDate]' => '2026-12-01',
             'edition_settings[welcomeEmailTemplate]' => 'W {SANTA} {LINK}',
             'edition_settings[resultEmailTemplate]' => 'R {SANTA} {TARGET}',
             'edition_settings[reminderEmailTemplate]' => 'Rem {SANTA}',
@@ -28,6 +29,8 @@ final class SettingsControllerCoverageTest extends AppWebTestCase
         $settings = $this->em->find(EditionSettings::class, EditionSettings::SINGLETON_ID);
         self::assertNotNull($settings);
         self::assertSame(99.5, $settings->getBudgetMax());
+        self::assertNotNull($settings->getDrawDate());
+        self::assertSame('2026-12-01', $settings->getDrawDate()->format('Y-m-d'));
     }
 
     public function testInvalidForm(): void

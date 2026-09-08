@@ -23,6 +23,9 @@ class EditionSettings
     #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $eventDate = null;
 
+    #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $drawDate = null;
+
     #[ORM\Column(type: Types::TEXT)]
     private string $welcomeEmailTemplate = "Bonjour {SANTA},\n\nBienvenue dans le Secret Santa familial ! Budget : {BUDGET} €.\nTon lien personnel : {LINK}";
 
@@ -57,6 +60,18 @@ class EditionSettings
     public function setEventDate(?\DateTimeImmutable $eventDate): static
     {
         $this->eventDate = $eventDate;
+
+        return $this;
+    }
+
+    public function getDrawDate(): ?\DateTimeImmutable
+    {
+        return $this->drawDate;
+    }
+
+    public function setDrawDate(?\DateTimeImmutable $drawDate): static
+    {
+        $this->drawDate = $drawDate;
 
         return $this;
     }

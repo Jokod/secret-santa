@@ -32,6 +32,14 @@ final class EditionSettingsType extends AbstractType
                 'help' => 'Affichée aux participants (optionnel).',
                 'disabled' => $disabled,
             ])
+            ->add('drawDate', DateType::class, [
+                'label' => 'Date du tirage',
+                'widget' => 'single_text',
+                'required' => false,
+                'input' => 'datetime_immutable',
+                'help' => 'Informationnelle uniquement — n’exécute pas le tirage automatiquement.',
+                'disabled' => $disabled,
+            ])
             ->add('welcomeEmailTemplate', TextareaType::class, [
                 'label' => 'Email de bienvenue',
                 'attr' => ['rows' => 5],

@@ -11,6 +11,9 @@
         {% if settings.eventDate %}
             <p class="page-lead">Événement le {{ settings.eventDate|date('d/m/Y') }}</p>
         {% endif %}
+        {% if settings.drawDate %}
+            <p class="page-lead">Tirage prévu le {{ settings.drawDate|date('d/m/Y') }}</p>
+        {% endif %}
     </div>
 </div>
 

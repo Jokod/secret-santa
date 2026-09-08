@@ -56,26 +56,32 @@ final class EntityCoverageTest extends TestCase
         self::assertSame(EditionSettings::SINGLETON_ID, $settings->getId());
         self::assertSame(50.0, $settings->getBudgetMax());
         self::assertNull($settings->getEventDate());
+        self::assertNull($settings->getDrawDate());
         self::assertNotSame('', $settings->getWelcomeEmailTemplate());
         self::assertNotSame('', $settings->getResultEmailTemplate());
         self::assertNotSame('', $settings->getReminderEmailTemplate());
 
         $date = new \DateTimeImmutable('2026-12-24');
+        $drawDate = new \DateTimeImmutable('2026-12-01');
         $settings
             ->setBudgetMax(75.5)
             ->setEventDate($date)
+            ->setDrawDate($drawDate)
             ->setWelcomeEmailTemplate('welcome')
             ->setResultEmailTemplate('result')
             ->setReminderEmailTemplate('reminder');
 
         self::assertSame(75.5, $settings->getBudgetMax());
         self::assertSame($date, $settings->getEventDate());
+        self::assertSame($drawDate, $settings->getDrawDate());
         self::assertSame('welcome', $settings->getWelcomeEmailTemplate());
         self::assertSame('result', $settings->getResultEmailTemplate());
         self::assertSame('reminder', $settings->getReminderEmailTemplate());
 
         $settings->setEventDate(null);
+        $settings->setDrawDate(null);
         self::assertNull($settings->getEventDate());
+        self::assertNull($settings->getDrawDate());
     }
 
     public function testExclusionAccessors(): void
