@@ -1,6 +1,6 @@
-services: 
+services:
 
-  database: 
+  database:
     image: mysql:8.0
     container_name: santa_database_${APP_INSTANCE}
     restart: always
@@ -11,8 +11,6 @@ services:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
     volumes:
       - mysql_data:/var/lib/mysql
-    networks:
-      - santa_network
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 5s
@@ -22,7 +20,7 @@ services:
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     container_name: santa_phpmyadmin_${APP_INSTANCE}
-    ports: 
+    ports:
       - 6951:80
     depends_on:
       database:
@@ -35,22 +33,13 @@ services:
       PHP_INI_POST_MAX_SIZE: 100M
       UPLOAD_LIMIT: 2048M
     restart: always
-    networks:
-      - santa_network
 
   mailer:
     image: mailhog/mailhog
     container_name: santa_mailer_${APP_INSTANCE}
-    ports: 
+    ports:
       - 6952:1025 # smtp server
       - 6953:8025 # web ui
-    networks:
-      - santa_network
 
 volumes:
   mysql_data:
-
-networks:
-  santa_network:
-    name: santa_santa_network
-    external: true

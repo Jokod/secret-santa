@@ -49,7 +49,6 @@ info:
 
 ## -- Docker 🐳 ----------------------------------------------------------------
 docker-up: ## Start MySQL, PhpMyAdmin, Mailhog
-	@docker network inspect santa_santa_network >/dev/null 2>&1 || docker network create --driver bridge --subnet 10.209.0.0/24 santa_santa_network
 	$(DOCKER) compose --env-file .env.local up -d
 	@echo "Waiting for MySQL..."
 	@for i in $$(seq 1 30); do \

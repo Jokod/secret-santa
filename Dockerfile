@@ -52,12 +52,15 @@ RUN apt-get update \
 
 COPY --from=builder /app /app
 
+COPY --chmod=755 docker/entrypoint.sh /app/docker/entrypoint.sh
+
 RUN mkdir -p var/cache var/log \
     && chown -R www-data:www-data var
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=5s --start-period=90s --retries=3 \
     CMD curl -so /dev/null http://localhost/ || exit 1
 
 EXPOSE 80
 
+ENTRYPOINT ["/app/docker/entrypoint.sh"]
 CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]
