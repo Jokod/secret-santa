@@ -18,7 +18,9 @@ if [ "$1" = "frankenphp" ]; then
     php bin/console doctrine:migrations:sync-metadata-storage --no-interaction
 
     echo "[entrypoint] Migrations…"
-    php bin/console doctrine:migrations:migrate --no-interaction --all-or-nothing
+    # Avoid --all-or-nothing: MySQL can fail SAVEPOINT rollback when a step errors
+    # (e.g. mismatched migration history). Plain migrate is safer for boot.
+    php bin/console doctrine:migrations:migrate --no-interaction
 
     echo "[entrypoint] Assets…"
     php bin/console assets:install --no-interaction
