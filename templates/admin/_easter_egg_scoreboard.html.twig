@@ -1,0 +1,37 @@
+{# Expects: elfScoreboard (iterable of Participant) #}
+<section class="panel scoreboard-panel">
+    <div class="scoreboard-header">
+        <div class="scoreboard-header-icon" aria-hidden="true">
+            <i class="fa-solid fa-hat-wizard"></i>
+        </div>
+        <div>
+            <h2 class="scoreboard-title">Classement du lutin farceur</h2>
+            <p class="help">Meilleurs scores du mini-jeu easter egg. Activez ou désactivez-le dans la <a href="{{ path('admin_settings') }}">configuration</a>.</p>
+        </div>
+    </div>
+
+    {% if elfScoreboard is empty %}
+        <div class="scoreboard-empty">
+            <i class="fa-solid fa-gift" aria-hidden="true"></i>
+            <p>Personne n’a encore trouvé le lutin. Les records apparaîtront ici.</p>
+        </div>
+    {% else %}
+        <ol class="scoreboard">
+            {% for p in elfScoreboard %}
+                <li class="scoreboard-row{% if loop.index <= 3 %} is-rank-{{ loop.index }}{% endif %}">
+                    <span class="scoreboard-rank" aria-hidden="true">{{ loop.index }}</span>
+                    <div class="scoreboard-player">
+                        <span class="scoreboard-name">{{ p.name }}</span>
+                        {% if p.elfHighScoreAt %}
+                            <time class="scoreboard-when" datetime="{{ p.elfHighScoreAt|date('c') }}">{{ p.elfHighScoreAt|date('d/m/Y · H:i') }}</time>
+                        {% endif %}
+                    </div>
+                    <div class="scoreboard-score" title="{{ p.elfHighScore }} cadeau{{ p.elfHighScore > 1 ? 'x' : '' }}">
+                        <strong>{{ p.elfHighScore }}</strong>
+                        <span>cadeau{{ p.elfHighScore > 1 ? 'x' : '' }}</span>
+                    </div>
+                </li>
+            {% endfor %}
+        </ol>
+    {% endif %}
+</section>

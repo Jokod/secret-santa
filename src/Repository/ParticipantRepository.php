@@ -46,4 +46,18 @@ class ParticipantRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @return list<Participant>
+     */
+    public function findElfScoreboard(): array
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.elfHighScore > 0')
+            ->orderBy('p.elfHighScore', 'DESC')
+            ->addOrderBy('p.elfHighScoreAt', 'ASC')
+            ->addOrderBy('p.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

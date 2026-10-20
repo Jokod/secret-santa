@@ -1,0 +1,8 @@
+proxy:
+    domains:
+        - santa
+
+# Mercure same-origin: Symfony CLI 5.20 has no http.proxy_mercure yet.
+# Dev uses App\Controller\MercureHubProxyController (when@dev) to forward
+# /.well-known/mercure + mercureAuthorization cookie to the Docker hub.
+# When the CLI gains proxy_mercure, enable it here and remove the PHP proxy.

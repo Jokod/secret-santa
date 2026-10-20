@@ -58,7 +58,7 @@ final class ParticipantAdminFlowTest extends AppWebTestCase
         $this->client->submit($form);
         self::assertResponseRedirects();
         $this->client->followRedirect();
-        self::assertSelectorTextContains('table', 'Livre');
+        self::assertSelectorTextContains('.wish-card', 'Livre');
     }
 
     public function testWishAboveBudgetIsAcceptedWithWarning(): void
@@ -75,7 +75,7 @@ final class ParticipantAdminFlowTest extends AppWebTestCase
         $this->client->submit($form);
         self::assertResponseRedirects();
         $crawler = $this->client->followRedirect();
-        self::assertSelectorTextContains('table', 'Trop cher');
+        self::assertSelectorTextContains('.wish-card', 'Trop cher');
         self::assertSelectorExists('.wish-over-budget');
         self::assertSelectorExists('.flash-warning');
         self::assertSelectorTextContains('.flash-warning', 'dépasse le budget');
@@ -98,7 +98,7 @@ final class ParticipantAdminFlowTest extends AppWebTestCase
         $this->client->request('GET', '/participant/'.$alice->getTokenSecret());
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('body', 'Tu offres à Bob');
-        self::assertSelectorTextContains('table', 'Chaussettes');
+        self::assertSelectorTextContains('.wish-card', 'Chaussettes');
         // Page must not reveal that Cara is Alice's Santa
         self::assertSelectorTextNotContains('body', 'Cara');
         self::assertSelectorTextNotContains('body', 'ton Santa est');

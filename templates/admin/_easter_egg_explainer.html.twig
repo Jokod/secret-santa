@@ -1,0 +1,17 @@
+{# Expects: switch (FormView for easterEggEnabled) #}
+<div class="easter-egg-explainer">
+    <div class="easter-egg-explainer-icon" aria-hidden="true">
+        <i class="fa-solid fa-hat-wizard"></i>
+    </div>
+    <div class="easter-egg-explainer-body">
+        <div class="easter-egg-explainer-top">
+            <p class="easter-egg-explainer-title">Le lutin farceur</p>
+            {{ form_widget(switch) }}
+        </div>
+        <ol class="easter-egg-steps">
+            <li>Un lutin se cache derrière un panneau de l’espace participant.</li>
+            <li>En le cliquant, un mini-jeu de 60&nbsp;s démarre : attraper les cadeaux qui tombent.</li>
+            <li>Chaque participant garde son meilleur score ; le classement apparaît sur le tableau de bord.</li>
+        </ol>
+    </div>
+</div>

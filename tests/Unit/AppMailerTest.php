@@ -4,7 +4,6 @@ namespace App\Tests\Unit;
 
 use App\Entity\Assignment;
 use App\Entity\EditionSettings;
-use App\Entity\Message;
 use App\Entity\Participant;
 use App\Enum\MessageType;
 use App\Repository\EditionSettingsRepository;
@@ -19,12 +18,15 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 final class AppMailerTest extends TestCase
 {
     private MailerInterface&MockObject $mailer;
+    private UrlGeneratorInterface&MockObject $urlGenerator;
     private AppMailer $appMailer;
     private EditionSettings $settings;
 
     protected function setUp(): void
     {
         $this->mailer = $this->createMock(MailerInterface::class);
+        $this->urlGenerator = $this->createMock(UrlGeneratorInterface::class);
+        $this->urlGenerator->method('generate')->willReturn('/p/token');
 
         $this->settings = (new EditionSettings())
             ->setBudgetMax(50.0)
@@ -35,12 +37,9 @@ final class AppMailerTest extends TestCase
         $settingsRepository = $this->createStub(EditionSettingsRepository::class);
         $settingsRepository->method('getSettings')->willReturn($this->settings);
 
-        $urlGenerator = $this->createStub(UrlGeneratorInterface::class);
-        $urlGenerator->method('generate')->willReturn('/p/token');
-
         $this->appMailer = new AppMailer(
             $this->mailer,
-            $urlGenerator,
+            $this->urlGenerator,
             $settingsRepository,
             'noreply@santa.test',
             'https://santa.test',
@@ -131,15 +130,12 @@ final class AppMailerTest extends TestCase
         $this->appMailer->sendWishReminder($participant);
     }
 
-    public function testSendMessageNotification(): void
+    public function testSendMessageNotificationSingle(): void
     {
-        $santa = $this->participant('Alice', 'alice@test.com', 'tok-a');
         $target = $this->participant('Bob', 'bob@test.com', 'tok-b');
-        $message = (new Message())
-            ->setSanta($santa)
-            ->setTarget($target)
-            ->setType(MessageType::ToTarget)
-            ->setBody('Hello');
+        $mailer = $this->createMailerWithRouteMap([
+            'participant_messages_santa|tok-b' => '/participant/tok-b/messages/santa',
+        ]);
 
         $this->mailer->expects(self::once())
             ->method('send')
@@ -147,11 +143,59 @@ final class AppMailerTest extends TestCase
                 self::assertSame('Nouveau message Secret Santa', $email->getSubject());
                 self::assertSame($target->getEmail(), $email->getTo()[0]->getAddress());
                 self::assertStringContainsString('nouveau message Secret Santa', (string) $email->getTextBody());
+                self::assertStringContainsString('/participant/tok-b/messages/santa', (string) $email->getTextBody());
 
                 return true;
             }));
 
-        $this->appMailer->sendMessageNotification($message, $target);
+        $mailer->sendMessageNotification($target, 1, MessageType::ToTarget);
+    }
+
+    public function testSendMessageNotificationDigest(): void
+    {
+        $santa = $this->participant('Alice', 'alice@test.com', 'tok-a');
+        $mailer = $this->createMailerWithRouteMap([
+            'participant_messages_target|tok-a' => '/participant/tok-a/messages/target',
+        ]);
+
+        $this->mailer->expects(self::once())
+            ->method('send')
+            ->with(self::callback(function (Email $email) use ($santa): bool {
+                self::assertSame('3 nouveaux messages Secret Santa', $email->getSubject());
+                self::assertSame($santa->getEmail(), $email->getTo()[0]->getAddress());
+                self::assertStringContainsString('3 nouveaux messages', (string) $email->getTextBody());
+                self::assertStringContainsString('/participant/tok-a/messages/target', (string) $email->getTextBody());
+
+                return true;
+            }));
+
+        $mailer->sendMessageNotification($santa, 3, MessageType::ToSanta);
+    }
+
+    /**
+     * @param array<string, string> $routeMap keys "route|token"
+     */
+    private function createMailerWithRouteMap(array $routeMap): AppMailer
+    {
+        $urlGenerator = $this->createMock(UrlGeneratorInterface::class);
+        $urlGenerator->method('generate')->willReturnCallback(
+            static function (string $route, array $params) use ($routeMap): string {
+                $key = $route.'|'.($params['token'] ?? '');
+
+                return $routeMap[$key] ?? '/p/token';
+            }
+        );
+
+        $settingsRepository = $this->createStub(EditionSettingsRepository::class);
+        $settingsRepository->method('getSettings')->willReturn($this->settings);
+
+        return new AppMailer(
+            $this->mailer,
+            $urlGenerator,
+            $settingsRepository,
+            'noreply@santa.test',
+            'https://santa.test',
+        );
     }
 
     public function testBudgetFormattingStripsTrailingZeros(): void

@@ -70,6 +70,7 @@ Services locaux :
 | App | https://santa.wip (via Symfony proxy) |
 | PhpMyAdmin | http://127.0.0.1:6951 |
 | Mailhog | http://127.0.0.1:6953 |
+| Mercure hub | http://127.0.0.1:6954 (publish PHP) · navigateur via `https://santa.wip/.well-known/mercure` (cookie `mercureAuthorization` ; proxy PHP en local / Caddy en prod) |
 
 Migrations et compte admin :
 
@@ -111,7 +112,8 @@ Modèle d’environnement : [`.env.prod.dist`](.env.prod.dist).
 
 ```bash
 cp .env.prod.dist .env.local
-# Renseigner APP_SECRET, MYSQL_ROOT_PASSWORD, DEFAULT_URI, MAILER_DSN, MAIL_FROM
+# Renseigner APP_SECRET, MYSQL_ROOT_PASSWORD, DEFAULT_URI, MAILER_DSN, MAIL_FROM,
+# MERCURE_JWT_SECRET (et éventuellement MERCURE_JWT_ISSUER)
 
 docker compose -f compose.prod.yaml --env-file .env.local pull
 docker compose -f compose.prod.yaml --env-file .env.local up -d
@@ -125,6 +127,8 @@ Au démarrage du conteneur `app` :
 4. `cache:warmup`  
 
 Le conteneur `worker` reste up et relance en boucle le process `messenger:consume async` (emails en arrière-plan).
+
+Le hub **Mercure** (`dunglas/mercure`) tourne en service à côté. Auth subscriber **native** MercureBundle : cookie HttpOnly `mercureAuthorization` (fonction Twig `mercure()`), jamais de JWT dans l’URL. En prod, FrankenPHP/Caddy proxifie `/.well-known/mercure` vers le hub ; en local (Symfony CLI 5.20 sans `proxy_mercure`), un contrôleur PHP `when@dev` forward le flux SSE et le cookie. `MERCURE_URL` = publish interne ; l’URL publique navigateur = `DEFAULT_URI` (sans slash final) + `/.well-known/mercure`. Protocole hub `0.x`. Topics de fil `urn:santa:thread:{hmac}` (opaques, sans noms). Emails unread : digest idempotent après 10 min si toujours non lus.
 
 Image :
 
@@ -155,8 +159,8 @@ migrations/
 src/                  # Domaine, contrôleurs, services
 templates/
 tests/
-compose.yaml          # Dev (MySQL, PhpMyAdmin, Mailhog)
-compose.prod.yaml     # Prod (app + worker Messenger + MySQL)
+compose.yaml          # Dev (MySQL, PhpMyAdmin, Mailhog, Mercure)
+compose.prod.yaml     # Prod (app + worker + Mercure + MySQL)
 ```
 
 ## Documentation produit

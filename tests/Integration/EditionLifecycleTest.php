@@ -58,8 +58,10 @@ final class EditionLifecycleTest extends AppWebTestCase
 
         /** @var MessageService $messages */
         $messages = static::getContainer()->get(MessageService::class);
+        $beforeMails = count(self::getMailerMessages() ?: []);
         $messages->sendFromSanta($alice, 'Des indices sur la couleur ?');
-        self::assertGreaterThanOrEqual(5, self::getMailerMessages() ? count(self::getMailerMessages()) : 5);
+        // Email chat différé (10 min si non lu) — pas d’envoi immédiat
+        self::assertCount($beforeMails, self::getMailerMessages() ?: []);
 
         /** @var MessageRepository $messageRepo */
         $messageRepo = static::getContainer()->get(MessageRepository::class);

@@ -35,6 +35,9 @@ RUN mkdir -p var/cache var/log \
        MAILER_DSN=null://null \
        MAIL_FROM=noreply@santa.local \
        MESSENGER_TRANSPORT_DSN=in-memory:// \
+       MERCURE_URL=http://mercure/.well-known/mercure \
+       MERCURE_JWT_SECRET=build_mercure_secret \
+       MERCURE_JWT_ISSUER=https://localhost \
     && php bin/console importmap:install --no-interaction \
     && php bin/console asset-map:compile --no-interaction \
     && php bin/console cache:warmup --no-interaction \

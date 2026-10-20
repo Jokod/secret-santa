@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\ParticipantRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -45,6 +46,18 @@ class Participant
 
     #[ORM\OneToOne(mappedBy: 'target', targetEntity: Assignment::class)]
     private ?Assignment $assignmentAsTarget = null;
+
+    #[ORM\Column(options: ['default' => 0])]
+    private int $elfHighScore = 0;
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $elfHighScoreAt = null;
+
+    #[ORM\Column(length: 64, nullable: true)]
+    private ?string $elfGameSessionToken = null;
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $elfGameStartedAt = null;
 
     public function __construct()
     {
@@ -193,5 +206,68 @@ class Participant
     public function isAssigned(): bool
     {
         return $this->assignmentAsSanta !== null || $this->assignmentAsTarget !== null;
+    }
+
+    public function getElfHighScore(): int
+    {
+        return $this->elfHighScore;
+    }
+
+    public function setElfHighScore(int $elfHighScore): static
+    {
+        $this->elfHighScore = max(0, $elfHighScore);
+
+        return $this;
+    }
+
+    public function getElfHighScoreAt(): ?\DateTimeImmutable
+    {
+        return $this->elfHighScoreAt;
+    }
+
+    public function setElfHighScoreAt(?\DateTimeImmutable $elfHighScoreAt): static
+    {
+        $this->elfHighScoreAt = $elfHighScoreAt;
+
+        return $this;
+    }
+
+    /**
+     * Updates the stored high score when the new score is strictly better.
+     */
+    public function recordElfHighScore(int $score): bool
+    {
+        if ($score <= $this->elfHighScore) {
+            return false;
+        }
+
+        $this->elfHighScore = $score;
+        $this->elfHighScoreAt = new \DateTimeImmutable();
+
+        return true;
+    }
+
+    public function getElfGameSessionToken(): ?string
+    {
+        return $this->elfGameSessionToken;
+    }
+
+    public function setElfGameSessionToken(?string $elfGameSessionToken): static
+    {
+        $this->elfGameSessionToken = $elfGameSessionToken;
+
+        return $this;
+    }
+
+    public function getElfGameStartedAt(): ?\DateTimeImmutable
+    {
+        return $this->elfGameStartedAt;
+    }
+
+    public function setElfGameStartedAt(?\DateTimeImmutable $elfGameStartedAt): static
+    {
+        $this->elfGameStartedAt = $elfGameStartedAt;
+
+        return $this;
     }
 }

@@ -16,7 +16,7 @@
 </div>
 
 {% if locked %}
-    <div class="locked-banner"><i class="fa-solid fa-lock"></i><span>Tirage actif : pas de nouvel ajout ni suppression.</span></div>
+    {% include '_locked_banner.html.twig' with {message: 'Tirage actif : pas de nouvel ajout ni suppression.'} only %}
 {% endif %}
 
 {% if participants is empty %}

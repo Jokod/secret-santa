@@ -4,8 +4,8 @@ namespace App\Service;
 
 use App\Entity\Assignment;
 use App\Entity\EditionSettings;
-use App\Entity\Message;
 use App\Entity\Participant;
+use App\Enum\MessageType;
 use App\Repository\EditionSettingsRepository;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\MailerInterface;
@@ -92,30 +92,56 @@ final class AppMailer
         );
     }
 
-    public function sendMessageNotification(Message $message, Participant $recipient): void
+    public function sendMessageNotification(Participant $recipient, int $count, MessageType $incomingType): void
     {
-        $link = $this->participantLink($recipient);
-        $body = sprintf(
-            "Tu as reçu un nouveau message Secret Santa.\nOuvre ton espace pour le lire et répondre :\n%s",
-            $link
-        );
+        $count = max(1, $count);
+        $route = $incomingType === MessageType::ToTarget
+            ? 'participant_messages_santa'
+            : 'participant_messages_target';
+        $link = $this->absoluteParticipantUrl($recipient, $route);
+
+        if ($count === 1) {
+            $subject = 'Nouveau message Secret Santa';
+            $plain = sprintf(
+                "Tu as reçu un nouveau message Secret Santa.\nOuvre ton espace pour le lire et répondre :\n%s",
+                $link
+            );
+            $eyebrow = 'Nouveau message';
+            $lead = 'Un échange t’attend dans ton espace';
+            $cta = 'Lire le message';
+        } else {
+            $subject = sprintf('%d nouveaux messages Secret Santa', $count);
+            $plain = sprintf(
+                "Tu as reçu %d nouveaux messages Secret Santa.\nOuvre ton espace pour les lire et répondre :\n%s",
+                $count,
+                $link
+            );
+            $eyebrow = 'Nouveaux messages';
+            $lead = sprintf('%d échanges t’attendent dans ton espace', $count);
+            $cta = 'Lire les messages';
+        }
 
         $this->send(
             $recipient->getEmail(),
-            'Nouveau message Secret Santa',
-            $body,
+            $subject,
+            $plain,
             $link,
-            'Nouveau message',
-            'Un échange t’attend dans ton espace',
-            'Lire le message',
+            $eyebrow,
+            $lead,
+            $cta,
             [$recipient->getName()],
         );
     }
 
     private function participantLink(Participant $participant): string
     {
+        return $this->absoluteParticipantUrl($participant, 'participant_home');
+    }
+
+    private function absoluteParticipantUrl(Participant $participant, string $route): string
+    {
         $path = $this->urlGenerator->generate(
-            'participant_home',
+            $route,
             ['token' => $participant->getTokenSecret()],
             UrlGeneratorInterface::ABSOLUTE_PATH,
         );

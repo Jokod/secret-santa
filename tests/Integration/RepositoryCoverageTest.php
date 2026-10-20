@@ -133,6 +133,20 @@ final class RepositoryCoverageTest extends AppWebTestCase
         self::assertCount(2, $matched['messages']);
         self::assertSame('older', $matched['messages'][0]->getBody());
         self::assertSame(1, $matched['unreadCount']);
+
+        $batchForTarget = $repo->findUnnotifiedUnreadForRecipientInThread($santa, $target, $target);
+        self::assertCount(0, $batchForTarget);
+
+        $batchForSanta = $repo->findUnnotifiedUnreadForRecipientInThread($santa, $target, $santa);
+        self::assertCount(1, $batchForSanta);
+        self::assertSame('newer', $batchForSanta[0]->getBody());
+
+        $outsider = $this->createParticipant('Outsider Msg', 'outsider.msg@test.com');
+        self::assertSame([], $repo->findUnnotifiedUnreadForRecipientInThread($santa, $target, $outsider));
+
+        $batchForSanta[0]->setEmailNotifiedAt(new \DateTimeImmutable());
+        $this->em->flush();
+        self::assertSame([], $repo->findUnnotifiedUnreadForRecipientInThread($santa, $target, $santa));
     }
 
     public function testParticipantFindOneByTokenAndOrderedByName(): void

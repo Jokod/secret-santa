@@ -37,6 +37,9 @@ class Message
     #[ORM\Column]
     private bool $isRead = false;
 
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $emailNotifiedAt = null;
+
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
 
@@ -107,6 +110,18 @@ class Message
     public function setIsRead(bool $isRead): static
     {
         $this->isRead = $isRead;
+
+        return $this;
+    }
+
+    public function getEmailNotifiedAt(): ?\DateTimeImmutable
+    {
+        return $this->emailNotifiedAt;
+    }
+
+    public function setEmailNotifiedAt(?\DateTimeImmutable $emailNotifiedAt): static
+    {
+        $this->emailNotifiedAt = $emailNotifiedAt;
 
         return $this;
     }

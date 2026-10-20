@@ -10,6 +10,9 @@ x-app-environment: &app-environment
   MAILER_DSN: ${MAILER_DSN:-null://null}
   MAIL_FROM: ${MAIL_FROM:-noreply@santa.local}
   MESSENGER_TRANSPORT_DSN: ${MESSENGER_TRANSPORT_DSN:-doctrine://default?auto_setup=0}
+  MERCURE_URL: http://mercure/.well-known/mercure
+  MERCURE_JWT_SECRET: ${MERCURE_JWT_SECRET:?MERCURE_JWT_SECRET required}
+  MERCURE_JWT_ISSUER: ${MERCURE_JWT_ISSUER:-${DEFAULT_URI}}
 
 services:
   app:
@@ -25,11 +28,18 @@ services:
         servers {
           trusted_proxies static private_ranges
         }
+      # Same-origin SSE : proxy hub Mercure
+      CADDY_SERVER_EXTRA_DIRECTIVES: |
+        handle /.well-known/mercure* {
+          reverse_proxy mercure:80
+        }
     volumes:
       - app_var_log:/app/var/log:rw
     depends_on:
       database:
         condition: service_healthy
+      mercure:
+        condition: service_started
 
   worker:
     image: ${APP_IMAGE:-ghcr.io/jokod/secret-santa}:${APP_IMAGE_TAG:-latest}
@@ -52,6 +62,24 @@ services:
         condition: service_healthy
       app:
         condition: service_started
+      mercure:
+        condition: service_started
+
+  mercure:
+    image: dunglas/mercure
+    container_name: santa_mercure_${APP_INSTANCE:-prod}
+    restart: unless-stopped
+    environment:
+      SERVER_NAME: ':80'
+      MERCURE_PUBLISHER_JWT_KEY: ${MERCURE_JWT_SECRET:?MERCURE_JWT_SECRET required}
+      MERCURE_SUBSCRIBER_JWT_KEY: ${MERCURE_JWT_SECRET:?MERCURE_JWT_SECRET required}
+      MERCURE_TRUSTED_ISSUERS: ${MERCURE_JWT_ISSUER:-${DEFAULT_URI}}
+      # JWT only — no anonymous, no playground
+      MERCURE_EXTRA_DIRECTIVES: |
+        cors_origins ${DEFAULT_URI}
+    volumes:
+      - mercure_data:/data
+      - mercure_config:/config
 
   database:
     image: mysql:8.0
@@ -73,3 +101,5 @@ services:
 volumes:
   mysql_data:
   app_var_log:
+  mercure_data:
+  mercure_config:

@@ -107,6 +107,37 @@ class MessageRepository extends ServiceEntityRepository
     }
 
     /**
+     * Unread messages in a thread that have not yet triggered an email notification,
+     * addressed to the given recipient (ToTarget → target, ToSanta → santa).
+     *
+     * @return list<Message>
+     */
+    public function findUnnotifiedUnreadForRecipientInThread(
+        Participant $santa,
+        Participant $target,
+        Participant $recipient,
+    ): array {
+        $qb = $this->createQueryBuilder('m')
+            ->andWhere('m.santa = :santa')
+            ->andWhere('m.target = :target')
+            ->andWhere('m.isRead = false')
+            ->andWhere('m.emailNotifiedAt IS NULL')
+            ->setParameter('santa', $santa)
+            ->setParameter('target', $target)
+            ->orderBy('m.createdAt', 'ASC');
+
+        if ($recipient->getId() === $target->getId()) {
+            $qb->andWhere('m.type = :type')->setParameter('type', MessageType::ToTarget);
+        } elseif ($recipient->getId() === $santa->getId()) {
+            $qb->andWhere('m.type = :type')->setParameter('type', MessageType::ToSanta);
+        } else {
+            return [];
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
      * Unread messages visible to the participant:
      * - fromTarget: replies from their gift target (type ToSanta)
      * - fromSanta: messages from their anonymous Santa (type ToTarget)

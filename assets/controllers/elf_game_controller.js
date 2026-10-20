@@ -9,12 +9,17 @@ export default class extends Controller {
         giftUrls: Array,
         musicUrl: String,
         catchSoundUrl: String,
+        startUrl: String,
+        scoreUrl: String,
+        csrfToken: String,
+        bestScore: { type: Number, default: 0 },
     };
 
     connect() {
         this.playing = false;
         this.score = 0;
         this.elapsed = 0;
+        this.sessionToken = null;
         this.spawnTimer = null;
         this.burstTimers = [];
         this.countdownTimer = null;
@@ -25,7 +30,7 @@ export default class extends Controller {
         this.audio = null;
         this.catchSound = null;
         this.snowTimer = null;
-        this.bestScore = this.readBestScore();
+        this.bestScore = Math.max(this.bestScoreValue, this.readBestScore());
         this.placeHiddenElf();
     }
 
@@ -106,12 +111,24 @@ export default class extends Controller {
         this.elfHost = null;
     }
 
-    startGame() {
+    async startGame() {
         if (this.playing) {
             return;
         }
 
         this.removeHiddenElf();
+
+        const session = await this.beginServerSession();
+        if (!session?.sessionToken) {
+            this.placeHiddenElf();
+            return;
+        }
+
+        this.sessionToken = session.sessionToken;
+        if (typeof session.duration === 'number' && session.duration > 0) {
+            this.durationValue = session.duration;
+        }
+
         this.playing = true;
         this.score = 0;
         this.elapsed = 0;
@@ -122,6 +139,29 @@ export default class extends Controller {
         this.startSnow();
         this.countdownTimer = window.setInterval(() => this.tick(), 1000);
         this.scheduleSpawn();
+    }
+
+    async beginServerSession() {
+        if (!this.startUrlValue || !this.csrfTokenValue) {
+            return null;
+        }
+
+        try {
+            const response = await fetch(this.startUrlValue, {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'X-CSRF-TOKEN': this.csrfTokenValue,
+                },
+                credentials: 'same-origin',
+            });
+            if (!response.ok) {
+                return null;
+            }
+            return await response.json();
+        } catch {
+            return null;
+        }
     }
 
     tick() {
@@ -305,6 +345,12 @@ export default class extends Controller {
             this.bestScore = this.score;
             this.writeBestScore(this.bestScore);
         }
+        // Always submit (even 0-ish / non-record) to burn the one-shot server session.
+        if (this.score > 0) {
+            this.persistBestScore(this.score);
+        } else {
+            this.sessionToken = null;
+        }
 
         this.stopLoops();
         this.stopMusic();
@@ -328,6 +374,37 @@ export default class extends Controller {
                 <p class="elf-result-joke">Ton Santa a été notifié… non, on plaisante.</p>
             `;
         }
+    }
+
+    persistBestScore(score) {
+        if (!this.scoreUrlValue || !this.csrfTokenValue || !this.sessionToken) {
+            return;
+        }
+
+        const sessionToken = this.sessionToken;
+        this.sessionToken = null;
+
+        fetch(this.scoreUrlValue, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+                'X-CSRF-TOKEN': this.csrfTokenValue,
+            },
+            body: JSON.stringify({ score, sessionToken }),
+            credentials: 'same-origin',
+        })
+            .then((response) => (response.ok ? response.json() : null))
+            .then((data) => {
+                if (data && typeof data.bestScore === 'number') {
+                    this.bestScore = Math.max(this.bestScore, data.bestScore);
+                    this.writeBestScore(this.bestScore);
+                    this.updateHud();
+                }
+            })
+            .catch(() => {
+                // ignore network errors — local record remains
+            });
     }
 
     renderOverlay() {

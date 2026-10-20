@@ -5,10 +5,16 @@
 {% block header %}
 <header
     class="site-header site-header-participant"
+    {% if settings.easterEggEnabled %}
     data-controller="elf-game"
     data-elf-game-elf-url-value="{{ asset('images/game/elf.png') }}"
     data-elf-game-music-url-value="{{ asset('audio/christmas-jingle.mp3') }}"
     data-elf-game-catch-sound-url-value="{{ asset('audio/gift-catch.mp3') }}"
+    data-elf-game-start-url-value="{{ path('participant_elf_game_start', {token: participant.tokenSecret}) }}"
+    data-elf-game-score-url-value="{{ path('participant_elf_score', {token: participant.tokenSecret}) }}"
+    data-elf-game-csrf-token-value="{{ csrf_token('elf_score_' ~ participant.id) }}"
+    data-elf-game-best-score-value="{{ participant.elfHighScore }}"
+    data-elf-game-duration-value="{{ constant('App\\Service\\ElfGameService::DURATION_SECONDS') }}"
     data-elf-game-gift-urls-value="{{ [
         asset('images/game/gift-crimson.png'),
         asset('images/game/gift-fir.png'),
@@ -16,6 +22,7 @@
         asset('images/game/gift-blue.png'),
         asset('images/game/gift-berry.png'),
     ]|json_encode|e('html_attr') }}"
+    {% endif %}
 >
     <a class="brand" href="{{ path('participant_home', {token: participant.tokenSecret}) }}" aria-label="Secret Santa Familial · mon espace">
         <img class="brand-logo" src="{{ asset('images/logo.png') }}" alt="" width="200" height="56" decoding="async">

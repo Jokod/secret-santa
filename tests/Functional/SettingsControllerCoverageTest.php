@@ -54,10 +54,13 @@ final class SettingsControllerCoverageTest extends AppWebTestCase
         self::assertSame(50.0, $settings?->getBudgetMax());
     }
 
-    public function testSaveWhenLocked(): void
+    public function testSaveWhenLockedKeepsCriticalFieldsButAllowsEasterEgg(): void
     {
         $this->loginAdmin();
-        $this->ensureSettings(50);
+        $settings = $this->ensureSettings(50);
+        $settings->setEasterEggEnabled(true);
+        $this->em->flush();
+
         $a = $this->createParticipant('SetA', 'seta@example.com');
         $b = $this->createParticipant('SetB', 'setb@example.com');
         $this->em->persist((new Assignment())->setSanta($a)->setTarget($b));
@@ -66,24 +69,18 @@ final class SettingsControllerCoverageTest extends AppWebTestCase
 
         $crawler = $this->client->request('GET', '/admin/settings');
         self::assertSelectorExists('.locked-banner');
-        $token = $crawler->filter('input[name="edition_settings[_token]"]')->attr('value');
+        self::assertSelectorExists('.easter-egg-explainer');
 
-        $this->client->request('POST', '/admin/settings', [
-            'edition_settings' => [
-                'budgetMax' => '10',
-                'welcomeEmailTemplate' => 'hack',
-                'resultEmailTemplate' => 'hack',
-                'reminderEmailTemplate' => 'hack',
-                '_token' => $token,
-            ],
-        ]);
+        $this->client->submit($crawler->selectButton('Enregistrer')->form([
+            'edition_settings[easterEggEnabled]' => false,
+        ]));
         self::assertResponseRedirects('/admin/settings');
         $this->client->followRedirect();
-        self::assertSelectorExists('.flash-danger');
-        self::assertSelectorTextContains('.flash-danger', 'verrouillés');
+        self::assertSelectorExists('.flash-success');
 
         $this->em->clear();
         $settings = $this->em->find(EditionSettings::class, EditionSettings::SINGLETON_ID);
         self::assertSame(50.0, $settings?->getBudgetMax());
+        self::assertFalse($settings?->isEasterEggEnabled());
     }
 }

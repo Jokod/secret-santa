@@ -77,7 +77,7 @@
             </form>
         {% endif %}
     {% else %}
-        <div class="locked-banner"><i class="fa-solid fa-lock"></i><span>Tirage actif. Les appariements restent confidentiels pour les participants.</span></div>
+        {% include '_locked_banner.html.twig' with {message: 'Tirage actif. Les appariements restent confidentiels pour les participants.'} only %}
         <form method="post" action="{{ path('admin_draw_reset') }}" class="santa-form">
             <input type="hidden" name="_token" value="{{ csrf_token('draw_reset') }}">
             <div class="form-row form-row-check">

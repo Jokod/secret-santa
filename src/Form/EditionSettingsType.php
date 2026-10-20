@@ -4,6 +4,7 @@ namespace App\Form;
 
 use App\Entity\EditionSettings;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -43,20 +44,25 @@ final class EditionSettingsType extends AbstractType
             ->add('welcomeEmailTemplate', TextareaType::class, [
                 'label' => 'Email de bienvenue',
                 'attr' => ['rows' => 5],
-                'help' => 'Variables : {SANTA}, {TARGET}, {BUDGET}, {LINK}',
                 'disabled' => $disabled,
             ])
             ->add('resultEmailTemplate', TextareaType::class, [
                 'label' => 'Email de résultat du tirage',
                 'attr' => ['rows' => 5],
-                'help' => 'Variables : {SANTA}, {TARGET}, {BUDGET}, {LINK}',
                 'disabled' => $disabled,
             ])
             ->add('reminderEmailTemplate', TextareaType::class, [
                 'label' => 'Email de rappel souhaits',
                 'attr' => ['rows' => 5],
-                'help' => 'Variables : {SANTA}, {TARGET}, {BUDGET}, {LINK}',
                 'disabled' => $disabled,
+            ])
+            ->add('easterEggEnabled', CheckboxType::class, [
+                'label' => false,
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-switch',
+                    'aria-label' => 'Activer le mini-jeu Le lutin farceur',
+                ],
             ]);
     }
 

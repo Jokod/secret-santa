@@ -38,6 +38,9 @@ jobs:
       MAILER_DSN: null://null
       MAIL_FROM: noreply@santa.test
       MESSENGER_TRANSPORT_DSN: in-memory://
+      MERCURE_URL: http://127.0.0.1:6954/.well-known/mercure
+      MERCURE_JWT_SECRET: '!ChangeThisMercureHubJWTSecretKey!'
+      MERCURE_JWT_ISSUER: https://localhost
     steps:
       - uses: actions/checkout@v5
 

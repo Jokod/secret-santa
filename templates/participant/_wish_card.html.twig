@@ -1,0 +1,79 @@
+{#
+  wish, budgetMax, editable (bool), token (string|null), editingWish (Wish|null),
+  variant ('offer'|'own')
+#}
+{% set overBudget = wish.estimatedPrice > budgetMax %}
+{% set isEditing = editable and editingWish and editingWish.id == wish.id %}
+{% set variant = variant|default(editable ? 'own' : 'offer') %}
+{% set order = wish.preferenceOrder %}
+{% set isTop = order <= 1 %}
+{% if order <= 1 %}
+    {% set rankLabel = '1er choix' %}
+{% elseif order == 2 %}
+    {% set rankLabel = '2e choix' %}
+{% elseif order == 3 %}
+    {% set rankLabel = '3e choix' %}
+{% else %}
+    {% set rankLabel = order ~ 'e choix' %}
+{% endif %}
+
+<article class="wish-card wish-card-{{ variant }}{% if isTop %} is-top{% endif %}{% if isEditing %} is-editing{% endif %}{% if overBudget %} is-over-budget{% endif %}">
+    <div class="wish-card-rank{% if isTop %} wish-card-rank-top{% endif %}" title="{{ rankLabel }}">
+        {% if isTop %}
+            <i class="fa-solid fa-star" aria-hidden="true"></i>
+        {% else %}
+            <span aria-hidden="true">{{ order }}</span>
+        {% endif %}
+        <span class="visually-hidden">{{ rankLabel }}</span>
+    </div>
+
+    <div class="wish-card-body">
+        <div class="wish-card-header">
+            <div class="wish-card-heading">
+                <span class="wish-card-priority">{{ rankLabel }}</span>
+                <h3 class="wish-card-title">{{ wish.title }}</h3>
+            </div>
+            <div class="wish-card-price{% if overBudget %} wish-card-price-over{% endif %}">
+                <span>{{ wish.estimatedPrice }}&nbsp;€</span>
+                {% if overBudget %}
+                    <span class="wish-over-budget" title="Dépassement du budget recommandé ({{ budgetMax }} €)">
+                        <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                        <span class="visually-hidden">Dépassement du budget</span>
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if wish.description %}
+            <p class="wish-card-desc">{{ wish.description }}</p>
+        {% endif %}
+
+        {% set showFooter = wish.url or variant == 'own' %}
+        {% if showFooter %}
+            <div class="wish-card-footer">
+                {% if wish.url %}
+                    <a class="wish-card-link{% if variant == 'offer' %} wish-card-link-primary{% endif %}" href="{{ wish.url }}" target="_blank" rel="noopener noreferrer">
+                        <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+                        {{ variant == 'offer' ? 'Voir le produit' : 'Lien' }}
+                    </a>
+                {% else %}
+                    <span class="wish-card-link-missing">Pas de lien</span>
+                {% endif %}
+
+                {% if editable and token %}
+                    <div class="wish-card-actions">
+                        <a class="btn btn-ghost btn-icon" href="{{ path('participant_wish_edit', {token: token, id: wish.id}) }}" title="Modifier" aria-label="Modifier {{ wish.title }}">
+                            <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                        </a>
+                        <form method="post" action="{{ path('participant_wish_delete', {token: token, id: wish.id}) }}" onsubmit="return confirm('Supprimer ce souhait ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_wish_' ~ wish.id) }}">
+                            <button class="btn btn-ghost btn-icon wish-card-delete" type="submit" title="Supprimer" aria-label="Supprimer {{ wish.title }}">
+                                <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                            </button>
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</article>

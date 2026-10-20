@@ -7,7 +7,7 @@
 <p>Checklist de l’édition : participants → exclusions → config → souhaits → tirage → suivi.</p>
 
 {% if locked %}
-    <div class="locked-banner"><i class="fa-solid fa-lock"></i> Tirage actif : réglages critiques verrouillés jusqu’au reset.</div>
+    {% include '_locked_banner.html.twig' with {message: 'Tirage actif : réglages critiques verrouillés jusqu’au reset.'} only %}
 {% endif %}
 
 {% include '_budget.html.twig' with {amount: settings.budgetMax} %}
@@ -25,4 +25,8 @@
     <li><i class="fa-solid fa-sliders"></i><div><a href="{{ path('admin_settings') }}">Configurer budget et emails</a></div></li>
     <li><i class="fa-solid fa-shuffle"></i><div><a href="{{ path('admin_draw') }}">Lancer ou réinitialiser le tirage</a></div></li>
 </ul>
+
+{% if settings.easterEggEnabled %}
+    {% include 'admin/_easter_egg_scoreboard.html.twig' with {elfScoreboard: elfScoreboard} only %}
+{% endif %}
 {% endblock %}

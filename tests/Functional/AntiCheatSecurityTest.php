@@ -78,6 +78,34 @@ final class AntiCheatSecurityTest extends AppWebTestCase
         self::assertSelectorTextNotContains('body', 'Santa (MsgC');
     }
 
+    public function testMercureSubscribeUrlNeverExposesSantaName(): void
+    {
+        $this->ensureSettings();
+        $a = $this->createParticipant('MercA', 'merca@ex.com');
+        $b = $this->createParticipant('MercB', 'mercb@ex.com');
+        $c = $this->createParticipant('MercC', 'mercc@ex.com');
+        $this->em->persist((new Assignment())->setSanta($a)->setTarget($b));
+        $this->em->persist((new Assignment())->setSanta($b)->setTarget($c));
+        $this->em->persist((new Assignment())->setSanta($c)->setTarget($a));
+        $this->em->flush();
+
+        $crawler = $this->client->request('GET', '/participant/'.$a->getTokenSecret().'/messages/santa');
+        self::assertResponseIsSuccessful();
+        $subscribeUrl = $crawler->filter('[data-chat-live-subscribe-url-value]')->attr('data-chat-live-subscribe-url-value');
+        self::assertNotEmpty($subscribeUrl);
+        self::assertStringContainsString('topic=', (string) $subscribeUrl);
+        self::assertStringContainsString('urn%3Asanta%3Athread%3A', (string) $subscribeUrl);
+        self::assertStringNotContainsString('//.well-known', (string) $subscribeUrl);
+        self::assertStringNotContainsString('authorization=', (string) $subscribeUrl);
+        self::assertStringNotContainsString('MercC', (string) $subscribeUrl);
+        self::assertNotNull($this->client->getCookieJar()->get('mercureAuthorization', '/.well-known/mercure'));
+        self::assertSame(
+            'Ton Santa',
+            $crawler->filter('[data-chat-live-theirs-label-value]')->attr('data-chat-live-theirs-label-value')
+        );
+        self::assertSelectorTextNotContains('body', 'MercC');
+    }
+
     public function testDeleteWishOfAnotherParticipantReturns404(): void
     {
         $this->ensureSettings(50);
@@ -116,7 +144,7 @@ final class AntiCheatSecurityTest extends AppWebTestCase
         self::assertResponseRedirects('/participant/'.$a->getTokenSecret());
         $this->client->followRedirect();
         self::assertSelectorExists('.flash-success');
-        self::assertSelectorTextContains('table', 'Après tirage');
+        self::assertSelectorTextContains('.wish-card', 'Après tirage');
     }
 
     public function testMessagingWithoutAssignmentIsRejected(): void

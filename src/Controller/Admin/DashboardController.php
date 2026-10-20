@@ -24,13 +24,18 @@ final class DashboardController extends AbstractController
         EditionSettingsRepository $settingsRepository,
         EditionLockGuard $lockGuard,
     ): Response {
+        $settings = $settingsRepository->getSettings();
+
         return $this->render('admin/dashboard.html.twig', [
             'participantCount' => $participants->count([]),
             'wishCount' => $wishes->countAll(),
             'unreadMessages' => $messages->countUnread(),
             'drawActive' => $assignments->hasActiveDraw(),
             'locked' => $lockGuard->isLocked(),
-            'settings' => $settingsRepository->getSettings(),
+            'settings' => $settings,
+            'elfScoreboard' => $settings->isEasterEggEnabled()
+                ? $participants->findElfScoreboard()
+                : [],
         ]);
     }
 }

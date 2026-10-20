@@ -1,0 +1,9 @@
+# Dev overrides (loaded automatically with compose.yaml)
+
+services:
+  mercure:
+    environment:
+      GLOBAL_OPTIONS: |
+        servers {
+          trusted_proxies static private_ranges
+        }

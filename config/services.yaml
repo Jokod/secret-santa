@@ -7,8 +7,22 @@ services:
 
     App\:
         resource: '../src/'
+        exclude:
+            - '../src/Controller/MercureHubProxyController.php'
 
     App\Service\AppMailer:
         arguments:
             $mailFrom: '%env(MAIL_FROM)%'
             $defaultUri: '%env(DEFAULT_URI)%'
+
+    App\Service\ChatThreadTopic:
+        arguments:
+            $appSecret: '%kernel.secret%'
+
+when@dev:
+    services:
+        App\Controller\MercureHubProxyController:
+            autowire: true
+            autoconfigure: true
+            arguments:
+                $mercureUrl: '%env(MERCURE_URL)%'

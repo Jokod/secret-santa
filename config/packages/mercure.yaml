@@ -1,0 +1,20 @@
+mercure:
+    # Subscriber cookie lifetime (JWT exp follows). Session-scoped would be 0 → defaults to 1h in Authorization.
+    default_cookie_lifetime: 3600
+    hubs:
+        default:
+            url: '%env(MERCURE_URL)%'
+            # Same-origin subscribe URL from DEFAULT_URI (rtrim trailing / to avoid //).
+            public_url: '%env(rtrimslash:DEFAULT_URI)%/.well-known/mercure'
+            # dunglas/mercure (image actuelle) attend encore le protocole 0.x :
+            # query "topic=" + claim JWT "mercure" (publish V1 → 401 silencieux).
+            protocol_version: !php/enum Symfony\Component\Mercure\ProtocolVersion::Legacy
+            jwt:
+                secret: '%env(MERCURE_JWT_SECRET)%'
+                publish: '*'
+                claims:
+                    iss: '%env(MERCURE_JWT_ISSUER)%'
+                    # Audience = URL vue par le hub (publish direct sur MERCURE_URL)
+                    aud: '%env(MERCURE_URL)%'
+                    sub: 'app'
+                    client_id: 'app'

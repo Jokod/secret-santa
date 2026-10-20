@@ -1,0 +1,14 @@
+{#
+  m (Message), mineType (string), mineLabel, theirsLabel
+#}
+{% set mine = m.type.value == mineType %}
+<article
+    class="chat-bubble {{ mine ? 'chat-bubble-mine' : 'chat-bubble-theirs' }}{% if not mine and not m.read %} is-unread{% endif %}"
+    data-message-id="{{ m.id }}"
+>
+    <div class="chat-bubble-meta">
+        {% if mine %}{{ mineLabel }}{% else %}{{ theirsLabel }}{% endif %}
+        · {{ m.createdAt|date('d/m/Y H:i') }}
+    </div>
+    <div class="chat-bubble-body">{{ m.body|nl2br }}</div>
+</article>

@@ -2,7 +2,6 @@
 
 namespace App\Controller\Admin;
 
-use App\Exception\EditionLockedException;
 use App\Form\EditionSettingsType;
 use App\Repository\EditionSettingsRepository;
 use App\Service\EditionLockGuard;
@@ -28,14 +27,7 @@ final class SettingsController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            try {
-                $lockGuard->assertMutable();
-            } catch (EditionLockedException $e) {
-                $this->addFlash('danger', $e->getMessage());
-
-                return $this->redirectToRoute('admin_settings');
-            }
-
+            // When locked, critical fields are disabled so only easterEggEnabled can change.
             $em->flush();
             $this->addFlash('success', 'Configuration enregistrée.');
 

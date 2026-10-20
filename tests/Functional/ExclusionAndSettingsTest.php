@@ -55,6 +55,9 @@ final class ExclusionAndSettingsTest extends AppWebTestCase
 
         $this->client->request('GET', '/admin/settings');
         self::assertSelectorExists('.locked-banner');
-        self::assertSelectorNotExists('.actions-row button[type="submit"]');
+        self::assertSelectorExists('.easter-egg-explainer');
+        self::assertSelectorExists('.actions-row button[type="submit"]');
+        self::assertSelectorExists('#edition_settings_easterEggEnabled');
+        self::assertSelectorExists('#edition_settings_budgetMax[disabled]');
     }
 }

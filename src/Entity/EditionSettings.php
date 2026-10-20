@@ -35,9 +35,24 @@ class EditionSettings
     #[ORM\Column(type: Types::TEXT)]
     private string $reminderEmailTemplate = "Bonjour {SANTA},\n\nPense à remplir ta liste de souhaits (budget {BUDGET} €).\nTon espace : {LINK}";
 
+    #[ORM\Column(options: ['default' => true])]
+    private bool $easterEggEnabled = true;
+
     public function getId(): int
     {
         return $this->id;
+    }
+
+    public function isEasterEggEnabled(): bool
+    {
+        return $this->easterEggEnabled;
+    }
+
+    public function setEasterEggEnabled(bool $easterEggEnabled): static
+    {
+        $this->easterEggEnabled = $easterEggEnabled;
+
+        return $this;
     }
 
     public function getBudgetMax(): float

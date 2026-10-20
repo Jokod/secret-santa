@@ -20,6 +20,7 @@ framework:
             Symfony\Component\Mailer\Messenger\SendEmailMessage: async
             Symfony\Component\Notifier\Message\ChatMessage: async
             Symfony\Component\Notifier\Message\SmsMessage: async
+            App\Message\NotifyUnreadChatMessage: async
 
 when@test:
     framework:
@@ -29,3 +30,5 @@ when@test:
                 failed: 'in-memory://'
             routing:
                 Symfony\Component\Mailer\Messenger\SendEmailMessage: sync
+                # Keep delayed: do not auto-send chat emails in tests
+                App\Message\NotifyUnreadChatMessage: async

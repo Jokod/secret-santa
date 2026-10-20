@@ -1,0 +1,49 @@
+{#
+  thread, form, formAction,
+  mineType (MessageType value string),
+  mineLabel, theirsLabel,
+  emptyText, submitLabel, submitClass (optional, default btn-ghost),
+  mercureTopic (opaque thread topic — Twig mercure() sets the auth cookie),
+  markReadUrlTemplate (URL with /0/read placeholder), markReadCsrf
+#}
+{% import '_empty.html.twig' as ui %}
+{% set submitClass = submitClass|default('btn-ghost') %}
+
+<section
+    class="panel"
+    data-controller="chat-live"
+    data-chat-live-subscribe-url-value="{{ mercure(mercureTopic, { subscribe: mercureTopic }) }}"
+    data-chat-live-mine-type-value="{{ mineType }}"
+    data-chat-live-mine-label-value="{{ mineLabel }}"
+    data-chat-live-theirs-label-value="{{ theirsLabel }}"
+    data-chat-live-mark-read-url-template-value="{{ markReadUrlTemplate }}"
+    data-chat-live-mark-read-csrf-value="{{ markReadCsrf }}"
+>
+    <div class="chat" style="margin-bottom:1.25rem;" data-chat-live-target="thread">
+        {% for m in thread %}
+            {% include 'participant/_chat_bubble.html.twig' with {
+                m: m,
+                mineType: mineType,
+                mineLabel: mineLabel,
+                theirsLabel: theirsLabel
+            } only %}
+        {% else %}
+            {{ ui.empty('fa-comments', 'Aucun message pour l’instant', emptyText, null, null) }}
+        {% endfor %}
+    </div>
+
+    {{ form_start(form, {
+        action: formAction,
+        attr: {
+            'data-turbo': 'false',
+            'data-chat-live-target': 'form',
+            'data-action': 'submit->chat-live#send',
+        },
+    }) }}
+        {{ form_row(form.body) }}
+        <div class="actions-row">
+            <button class="btn {{ submitClass }}" type="submit" data-chat-live-target="submit">{{ submitLabel }}</button>
+        </div>
+    {{ form_end(form) }}
+</section>
+<div data-controller="scroll-bottom" aria-hidden="true"></div>

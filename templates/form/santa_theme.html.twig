@@ -79,19 +79,48 @@
 {%- endblock choice_widget_collapsed -%}
 
 {%- block checkbox_row -%}
-    <div class="form-row form-row-check{% if form.vars.errors|length > 0 %} has-error{% endif %}">
-        <label class="check-label" for="{{ id }}">
+    {%- set is_switch = 'form-switch' in (attr.class|default('')) or 'form-row-switch' in (row_attr.class|default('')) -%}
+    {%- if is_switch -%}
+        <div class="form-row form-row-switch{% if form.vars.errors|length > 0 %} has-error{% endif %}{% if row_attr.class is defined %} {{ row_attr.class }}{% endif %}">
+            {%- if label is not same as(false) -%}
+                <span class="switch-title" id="{{ id }}_label">
+                    {{- translation_domain is same as(false) ? label : label|trans({}, translation_domain) -}}
+                </span>
+            {%- endif -%}
             {{- form_widget(form) -}}
-            <span>{{- translation_domain is same as(false) ? label : label|trans({}, translation_domain) -}}</span>
-        </label>
-        {{- form_help(form) -}}
-        {{- form_errors(form) -}}
-    </div>
+            {{- form_help(form) -}}
+            {{- form_errors(form) -}}
+        </div>
+    {%- else -%}
+        <div class="form-row form-row-check{% if form.vars.errors|length > 0 %} has-error{% endif %}">
+            <label class="check-label" for="{{ id }}">
+                {{- form_widget(form) -}}
+                <span>{{- translation_domain is same as(false) ? label : label|trans({}, translation_domain) -}}</span>
+            </label>
+            {{- form_help(form) -}}
+            {{- form_errors(form) -}}
+        </div>
+    {%- endif -%}
 {%- endblock checkbox_row -%}
 
 {%- block checkbox_widget -%}
-    {%- set attr = attr|merge({'class': (attr.class|default('') ~ ' form-check')|trim}) -%}
-    {{- parent() -}}
+    {%- set is_switch = 'form-switch' in (attr.class|default('')) -%}
+    {%- if is_switch -%}
+        {%- set attr = attr|merge({'class': (attr.class|default('') ~ ' form-switch-input')|trim}) -%}
+        <label class="switch" for="{{ id }}">
+            {{- parent() -}}
+            <span class="switch-ui" aria-hidden="true">
+                <span class="switch-knob"></span>
+            </span>
+            <span class="switch-label">
+                <span class="switch-label-on">Activé</span>
+                <span class="switch-label-off">Désactivé</span>
+            </span>
+        </label>
+    {%- else -%}
+        {%- set attr = attr|merge({'class': (attr.class|default('') ~ ' form-check')|trim}) -%}
+        {{- parent() -}}
+    {%- endif -%}
 {%- endblock checkbox_widget -%}
 
 {%- block form_start -%}

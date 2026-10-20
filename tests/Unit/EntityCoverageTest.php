@@ -57,6 +57,7 @@ final class EntityCoverageTest extends TestCase
         self::assertSame(50.0, $settings->getBudgetMax());
         self::assertNull($settings->getEventDate());
         self::assertNull($settings->getDrawDate());
+        self::assertTrue($settings->isEasterEggEnabled());
         self::assertNotSame('', $settings->getWelcomeEmailTemplate());
         self::assertNotSame('', $settings->getResultEmailTemplate());
         self::assertNotSame('', $settings->getReminderEmailTemplate());
@@ -69,7 +70,8 @@ final class EntityCoverageTest extends TestCase
             ->setDrawDate($drawDate)
             ->setWelcomeEmailTemplate('welcome')
             ->setResultEmailTemplate('result')
-            ->setReminderEmailTemplate('reminder');
+            ->setReminderEmailTemplate('reminder')
+            ->setEasterEggEnabled(false);
 
         self::assertSame(75.5, $settings->getBudgetMax());
         self::assertSame($date, $settings->getEventDate());
@@ -77,6 +79,7 @@ final class EntityCoverageTest extends TestCase
         self::assertSame('welcome', $settings->getWelcomeEmailTemplate());
         self::assertSame('result', $settings->getResultEmailTemplate());
         self::assertSame('reminder', $settings->getReminderEmailTemplate());
+        self::assertFalse($settings->isEasterEggEnabled());
 
         $settings->setEventDate(null);
         $settings->setDrawDate(null);
@@ -105,23 +108,29 @@ final class EntityCoverageTest extends TestCase
         self::assertSame(MessageType::ToTarget, $message->getType());
         self::assertSame('', $message->getBody());
         self::assertFalse($message->isRead());
+        self::assertNull($message->getEmailNotifiedAt());
         self::assertInstanceOf(\DateTimeImmutable::class, $message->getCreatedAt());
 
+        $notifiedAt = new \DateTimeImmutable('2026-10-20 12:00:00');
         $message
             ->setSanta($santa)
             ->setTarget($target)
             ->setType(MessageType::ToSanta)
             ->setBody('  hello world  ')
-            ->setIsRead(true);
+            ->setIsRead(true)
+            ->setEmailNotifiedAt($notifiedAt);
 
         self::assertSame($santa, $message->getSanta());
         self::assertSame($target, $message->getTarget());
         self::assertSame(MessageType::ToSanta, $message->getType());
         self::assertSame('hello world', $message->getBody());
         self::assertTrue($message->isRead());
+        self::assertSame($notifiedAt, $message->getEmailNotifiedAt());
 
         $message->setIsRead(false);
+        $message->setEmailNotifiedAt(null);
         self::assertFalse($message->isRead());
+        self::assertNull($message->getEmailNotifiedAt());
     }
 
     public function testParticipantBasicsAndWishManagement(): void
@@ -139,6 +148,23 @@ final class EntityCoverageTest extends TestCase
         self::assertSame('Alice', $participant->getName());
         self::assertSame('alice@example.com', $participant->getEmail());
         self::assertSame('secret-token', $participant->getTokenSecret());
+        self::assertSame(0, $participant->getElfHighScore());
+        self::assertNull($participant->getElfHighScoreAt());
+        self::assertTrue($participant->recordElfHighScore(12));
+        self::assertSame(12, $participant->getElfHighScore());
+        self::assertNotNull($participant->getElfHighScoreAt());
+        self::assertFalse($participant->recordElfHighScore(10));
+        self::assertSame(12, $participant->getElfHighScore());
+        $participant->setElfHighScore(3)->setElfHighScoreAt(null);
+        self::assertSame(3, $participant->getElfHighScore());
+        self::assertNull($participant->getElfHighScoreAt());
+        $started = new \DateTimeImmutable('2026-12-24 10:00:00');
+        $participant->setElfGameSessionToken('abc')->setElfGameStartedAt($started);
+        self::assertSame('abc', $participant->getElfGameSessionToken());
+        self::assertSame($started, $participant->getElfGameStartedAt());
+        $participant->setElfGameSessionToken(null)->setElfGameStartedAt(null);
+        self::assertNull($participant->getElfGameSessionToken());
+        self::assertNull($participant->getElfGameStartedAt());
 
         $participant->setName('  pierre-alain  ');
         self::assertSame('Pierre-Alain', $participant->getName());

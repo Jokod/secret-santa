@@ -57,37 +57,34 @@
 {% endif %}
 
 {% if target %}
-<section class="panel">
-    <h2>Tu offres à {{ target.name }}</h2>
-    <p class="help">Voici ses souhaits : garde le secret, et n’essaie pas de découvrir qui t’offre un cadeau.</p>
+<section class="panel wish-panel wish-panel-offer">
+    <div class="wish-panel-header">
+        <div class="wish-panel-heading">
+            <span class="wish-panel-icon" aria-hidden="true"><i class="fa-solid fa-gift"></i></span>
+            <div>
+                <h2>Tu offres à {{ target.name }}</h2>
+                <p class="help">Ses idées cadeau, classées par priorité. Le 1er choix est son préféré.</p>
+            </div>
+        </div>
+        {% if target.wishes is not empty %}
+            <span class="wish-count">{{ target.wishes|length }} idée{{ target.wishes|length > 1 ? 's' : '' }}</span>
+        {% endif %}
+    </div>
+
     {% if target.wishes is empty %}
         {{ ui.empty('fa-gift', 'Pas encore de souhaits', target.name ~ ' n’a pas encore rempli sa liste. Tu pourras lui écrire via la messagerie.', null, null) }}
     {% else %}
-        <div class="table-wrap">
-            <table class="data">
-                <thead><tr><th>#</th><th>Titre</th><th>Prix</th><th>Lien</th></tr></thead>
-                <tbody>
-                {% for w in target.wishes %}
-                    <tr>
-                        <td>{{ w.preferenceOrder }}</td>
-                        <td>
-                            <strong>{{ w.title }}</strong>
-                            {% if w.description %}<br><span class="help">{{ w.description }}</span>{% endif %}
-                        </td>
-                        <td>
-                            {{ w.estimatedPrice }} €
-                            {% if w.estimatedPrice > settings.budgetMax %}
-                                <span class="wish-over-budget" title="Dépassement du budget recommandé ({{ settings.budgetMax }} €)">
-                                    <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
-                                    <span class="visually-hidden">Dépassement du budget</span>
-                                </span>
-                            {% endif %}
-                        </td>
-                        <td>{% if w.url %}<a href="{{ w.url }}" target="_blank" rel="noopener noreferrer">Voir</a>{% else %}<span class="help">-</span>{% endif %}</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+        <div class="wish-list" role="list">
+            {% for w in target.wishes %}
+                {% include 'participant/_wish_card.html.twig' with {
+                    wish: w,
+                    budgetMax: settings.budgetMax,
+                    editable: false,
+                    token: null,
+                    editingWish: null,
+                    variant: 'offer'
+                } only %}
+            {% endfor %}
         </div>
     {% endif %}
 </section>
@@ -98,83 +95,79 @@
 </section>
 {% endif %}
 
-<section class="panel">
-    <h2>Mes souhaits</h2>
+{% set wishFormAttr = {
+    'data-controller': 'wish-budget',
+    'data-wish-budget-budget-max-value': settings.budgetMax,
+    'data-action': 'submit->wish-budget#confirmIfOverBudget'
+} %}
+
+<section class="panel wish-panel wish-panel-own" id="mes-souhaits">
+    <div class="wish-panel-header">
+        <div class="wish-panel-heading">
+            <span class="wish-panel-icon" aria-hidden="true"><i class="fa-solid fa-heart"></i></span>
+            <div>
+                <h2>Mes souhaits</h2>
+                <p class="help">Aide ton Santa : plus c’est précis (lien, prix, priorité), mieux c’est.</p>
+            </div>
+        </div>
+        {% if participant.wishes is not empty %}
+            <span class="wish-count">{{ participant.wishes|length }} souhait{{ participant.wishes|length > 1 ? 's' : '' }}</span>
+        {% endif %}
+    </div>
 
     {% if participant.wishes is empty %}
-        {{ ui.empty('fa-list', 'Aucun souhait pour l’instant', 'Ajoute quelques idées pour aider ton Santa.', null, null) }}
+        {{ ui.empty('fa-list', 'Aucun souhait pour l’instant', 'Ajoute quelques idées ci-dessous pour aider ton Santa.', null, null) }}
     {% else %}
-        <div class="table-wrap" style="margin-bottom:1.25rem;">
-            <table class="data">
-                <thead><tr><th>#</th><th>Titre</th><th>Prix</th><th></th></tr></thead>
-                <tbody>
-                {% for w in participant.wishes %}
-                    <tr{% if editingWish and editingWish.id == w.id %} class="is-editing"{% endif %}>
-                        <td>{{ w.preferenceOrder }}</td>
-                        <td>
-                            <strong>{{ w.title }}</strong>
-                            {% if w.description %}<br><span class="help">{{ w.description }}</span>{% endif %}
-                        </td>
-                        <td>
-                            {{ w.estimatedPrice }} €
-                            {% if w.estimatedPrice > settings.budgetMax %}
-                                <span class="wish-over-budget" title="Dépassement du budget recommandé ({{ settings.budgetMax }} €)">
-                                    <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
-                                    <span class="visually-hidden">Dépassement du budget</span>
-                                </span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <div class="table-actions">
-                                <a class="btn btn-ghost btn-sm" href="{{ path('participant_wish_edit', {token: participant.tokenSecret, id: w.id}) }}">Modifier</a>
-                                <form method="post" action="{{ path('participant_wish_delete', {token: participant.tokenSecret, id: w.id}) }}" onsubmit="return confirm('Supprimer ce souhait ?');">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_wish_' ~ w.id) }}">
-                                    <button class="btn btn-danger btn-sm" type="submit">Supprimer</button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+        <div class="wish-list" role="list">
+            {% for w in participant.wishes %}
+                {% include 'participant/_wish_card.html.twig' with {
+                    wish: w,
+                    budgetMax: settings.budgetMax,
+                    editable: true,
+                    token: participant.tokenSecret,
+                    editingWish: editingWish,
+                    variant: 'own'
+                } only %}
+            {% endfor %}
         </div>
     {% endif %}
 
-    {% set wishFormAttr = {
-        'data-controller': 'wish-budget',
-        'data-wish-budget-budget-max-value': settings.budgetMax,
-        'data-action': 'submit->wish-budget#confirmIfOverBudget'
-    } %}
-
-    {% if editingWish %}
-        <h3 class="form-section-title">Modifier le souhait</h3>
-        {{ form_start(wishForm, {action: path('participant_wish_edit', {token: participant.tokenSecret, id: editingWish.id}), attr: wishFormAttr}) }}
-            {{ form_row(wishForm.title) }}
-            {{ form_row(wishForm.description) }}
-            <div class="form-cols form-cols-2">
-                {% include 'participant/_wish_price_field.html.twig' %}
-                {{ form_row(wishForm.preferenceOrder) }}
-            </div>
-            {{ form_row(wishForm.url) }}
-            <div class="actions-row">
-                <button class="btn btn-primary" type="submit">Enregistrer</button>
-                <a class="btn btn-ghost" href="{{ path('participant_home', {token: participant.tokenSecret}) }}">Annuler</a>
-            </div>
-        {{ form_end(wishForm) }}
-    {% else %}
-        <h3 class="form-section-title">Ajouter un souhait</h3>
-        {{ form_start(wishForm, {action: path('participant_wish_new', {token: participant.tokenSecret}), attr: wishFormAttr}) }}
-            {{ form_row(wishForm.title) }}
-            {{ form_row(wishForm.description) }}
-            <div class="form-cols form-cols-2">
-                {% include 'participant/_wish_price_field.html.twig' %}
-                {{ form_row(wishForm.preferenceOrder) }}
-            </div>
-            {{ form_row(wishForm.url) }}
-            <div class="actions-row">
-                <button class="btn btn-primary" type="submit">Ajouter un souhait</button>
-            </div>
-        {{ form_end(wishForm) }}
-    {% endif %}
+    <div class="wish-form-block" id="wish-form">
+        {% if editingWish %}
+            <h3 class="form-section-title">Modifier le souhait</h3>
+            {{ form_start(wishForm, {action: path('participant_wish_edit', {token: participant.tokenSecret, id: editingWish.id}), attr: wishFormAttr}) }}
+                {{ form_row(wishForm.title) }}
+                {{ form_row(wishForm.description) }}
+                <div class="form-cols form-cols-2">
+                    {% include 'participant/_wish_price_field.html.twig' %}
+                    {{ form_row(wishForm.preferenceOrder) }}
+                </div>
+                {{ form_row(wishForm.url) }}
+                <div class="actions-row">
+                    <button class="btn btn-primary" type="submit">Enregistrer</button>
+                    <a class="btn btn-ghost" href="{{ path('participant_home', {token: participant.tokenSecret}) }}">Annuler</a>
+                </div>
+            {{ form_end(wishForm) }}
+        {% else %}
+            <h3 class="form-section-title">Ajouter un souhait</h3>
+            {{ form_start(wishForm, {action: path('participant_wish_new', {token: participant.tokenSecret}), attr: wishFormAttr}) }}
+                {{ form_row(wishForm.title) }}
+                {{ form_row(wishForm.description) }}
+                <div class="form-cols form-cols-2">
+                    {% include 'participant/_wish_price_field.html.twig' %}
+                    {{ form_row(wishForm.preferenceOrder) }}
+                </div>
+                {{ form_row(wishForm.url) }}
+                <div class="actions-row">
+                    <button class="btn btn-primary" type="submit">Ajouter un souhait</button>
+                </div>
+            {{ form_end(wishForm) }}
+        {% endif %}
+    </div>
 </section>
+{% if editingWish %}
+    <script>
+        document.getElementById('wish-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    </script>
+{% endif %}
 {% endblock %}
