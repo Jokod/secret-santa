@@ -1,0 +1,12 @@
+{#
+  with_home (bool|null) — affiche le lien Accueil (défaut: true)
+#}
+{% if with_home|default(true) %}
+    <a href="{{ path('home') }}">Accueil</a>
+{% endif %}
+{% if is_granted('ROLE_ADMIN') %}
+    <a href="{{ path('admin_dashboard') }}">Admin</a>
+    {% include '_logout_form.html.twig' %}
+{% else %}
+    <a href="{{ path('admin_login') }}">Espace organisateur</a>
+{% endif %}

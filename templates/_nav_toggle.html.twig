@@ -1,0 +1,15 @@
+{#
+  controls (string) — id du panneau de navigation
+#}
+<button
+    class="nav-toggle"
+    type="button"
+    data-nav-menu-target="button"
+    data-action="nav-menu#toggle"
+    aria-expanded="false"
+    aria-controls="{{ controls }}"
+>
+    <i class="fa-solid fa-bars nav-toggle-icon nav-toggle-icon-open" aria-hidden="true"></i>
+    <i class="fa-solid fa-xmark nav-toggle-icon nav-toggle-icon-close" aria-hidden="true"></i>
+    <span class="visually-hidden">Menu</span>
+</button>

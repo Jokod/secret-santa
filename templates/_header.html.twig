@@ -1,0 +1,14 @@
+{#
+  brand_href (string), brand_label (string|null)
+  block nav — liens de navigation
+#}
+<header class="site-header" data-controller="nav-menu">
+    {% include '_brand.html.twig' with {
+        href: brand_href,
+        label: brand_label|default('Secret Santa Familial')
+    } only %}
+    {% include '_nav_toggle.html.twig' with {controls: 'main-nav'} only %}
+    <nav id="main-nav" class="nav-links" data-nav-menu-target="panel" aria-label="Navigation principale">
+        {% block nav %}{% endblock %}
+    </nav>
+</header>

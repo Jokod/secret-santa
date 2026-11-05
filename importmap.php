@@ -25,4 +25,56 @@ return [
     '@hotwired/turbo' => [
         'version' => '8.0.23',
     ],
+    '@fortawesome/fontawesome-free/css/all.min.css' => [
+        'version' => '6.5.2',
+        'type' => 'css',
+    ],
+    '@fontsource/fraunces/latin-400.css' => [
+        'version' => '5.3.0',
+        'type' => 'css',
+    ],
+    '@fontsource/fraunces/latin-500.css' => [
+        'version' => '5.3.0',
+        'type' => 'css',
+    ],
+    '@fontsource/fraunces/latin-700.css' => [
+        'version' => '5.3.0',
+        'type' => 'css',
+    ],
+    '@fontsource/fraunces/latin-ext-400.css' => [
+        'version' => '5.3.0',
+        'type' => 'css',
+    ],
+    '@fontsource/fraunces/latin-ext-500.css' => [
+        'version' => '5.3.0',
+        'type' => 'css',
+    ],
+    '@fontsource/fraunces/latin-ext-700.css' => [
+        'version' => '5.3.0',
+        'type' => 'css',
+    ],
+    '@fontsource/source-sans-3/latin-400.css' => [
+        'version' => '5.3.1',
+        'type' => 'css',
+    ],
+    '@fontsource/source-sans-3/latin-600.css' => [
+        'version' => '5.3.1',
+        'type' => 'css',
+    ],
+    '@fontsource/source-sans-3/latin-700.css' => [
+        'version' => '5.3.1',
+        'type' => 'css',
+    ],
+    '@fontsource/source-sans-3/latin-ext-400.css' => [
+        'version' => '5.3.1',
+        'type' => 'css',
+    ],
+    '@fontsource/source-sans-3/latin-ext-600.css' => [
+        'version' => '5.3.1',
+        'type' => 'css',
+    ],
+    '@fontsource/source-sans-3/latin-ext-700.css' => [
+        'version' => '5.3.1',
+        'type' => 'css',
+    ],
 ];

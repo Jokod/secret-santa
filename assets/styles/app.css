@@ -180,6 +180,57 @@ a:hover {
     background: rgba(31, 77, 58, 0.08);
 }
 
+.nav-toggle {
+    display: none;
+    appearance: none;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 2.6rem;
+    height: 2.6rem;
+    margin: 0;
+    padding: 0;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: #fff;
+    color: var(--color-ink);
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.nav-toggle:hover {
+    background: rgba(31, 77, 58, 0.08);
+    border-color: #cbbba8;
+    color: var(--color-fir);
+}
+
+.nav-toggle:focus-visible {
+    outline: 2px solid var(--color-fir);
+    outline-offset: 3px;
+}
+
+.nav-toggle-icon {
+    font-size: 1.15rem;
+    line-height: 1;
+}
+
+.nav-toggle-icon-close {
+    display: none;
+}
+
+.site-header.is-nav-open .nav-toggle-icon-open {
+    display: none;
+}
+
+.site-header.is-nav-open .nav-toggle-icon-close {
+    display: inline-block;
+}
+
+.panel-auth {
+    max-width: 440px;
+    margin: 2rem auto;
+}
+
 .container-narrow {
     width: min(1080px, calc(100% - 2rem));
     margin: 0 auto;
@@ -2131,43 +2182,108 @@ body.elf-game-open {
         flex-wrap: wrap;
         gap: 0.65rem;
         padding: 0.75rem 1rem;
-        align-items: flex-start;
+        align-items: center;
     }
 
     .brand-logo {
         height: 2.25rem;
     }
 
-    .nav-links {
+    .site-header:has(.nav-toggle) .nav-toggle {
+        display: inline-flex;
+        margin-left: auto;
+    }
+
+    .site-header:has(.nav-toggle) .nav-links {
+        display: none;
         width: 100%;
+        flex-direction: column;
+        align-items: stretch;
         justify-content: flex-start;
         flex-wrap: nowrap;
-        gap: 0.15rem;
-        overflow-x: auto;
-        overscroll-behavior-x: contain;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-        padding-bottom: 0.15rem;
-        mask-image: linear-gradient(90deg, #000 0%, #000 calc(100% - 1.5rem), transparent);
+        gap: 0.2rem;
+        padding: 0.35rem 0 0.15rem;
+        border-top: 1px solid var(--color-border);
+        margin-top: 0.15rem;
+        overflow: visible;
+        mask-image: none;
     }
 
-    .nav-links::-webkit-scrollbar {
-        display: none;
+    .site-header:has(.nav-toggle).is-nav-open .nav-links {
+        display: flex;
     }
 
-    .nav-links a,
-    .btn-logout {
-        flex-shrink: 0;
-        padding: 0.45rem 0.65rem;
-        font-size: 0.84rem;
+    .site-header:has(.nav-toggle) .nav-links a,
+    .site-header:has(.nav-toggle) .btn-logout {
+        width: 100%;
+        justify-content: flex-start;
+        text-align: left;
+        padding: 0.7rem 0.85rem;
+        font-size: 0.95rem;
+    }
+
+    .site-header:has(.nav-toggle) .logout-form {
+        display: block;
+        width: 100%;
     }
 
     .container-narrow {
         width: min(1080px, calc(100% - 1.25rem));
     }
 
+    .layout-home > .flash,
+    .home-content.container-narrow,
+    .home-content {
+        width: min(1080px, calc(100% - 1.25rem));
+        margin-left: auto;
+        margin-right: auto;
+    }
+
     main.container-narrow {
         padding: 1.1rem 0 1.75rem !important;
+    }
+
+    .panel-auth {
+        max-width: none;
+        margin: 0.75rem 0 1.25rem;
+    }
+
+    .panel-auth .actions-row > .btn {
+        width: 100%;
+    }
+
+    .checklist li {
+        align-items: flex-start;
+        padding: 0.85rem 0.9rem;
+    }
+
+    .checklist li > div {
+        min-width: 0;
+        word-break: break-word;
+    }
+
+    .empty-state {
+        padding: 1.5rem 0.85rem;
+    }
+
+    .empty-state-text {
+        max-width: none;
+    }
+
+    .flash {
+        margin: 0.75rem 0;
+        padding: 0.75rem 0.85rem;
+    }
+
+    .hint-box {
+        word-break: break-word;
+    }
+
+    .santa-form input,
+    .santa-form select,
+    .santa-form textarea,
+    .form-control {
+        font-size: 1rem;
     }
 
     .page-header {
@@ -2439,11 +2555,56 @@ body.elf-game-open {
     }
 
     .hero {
-        padding: clamp(2.5rem, 10vw, 4rem) 1rem clamp(2.25rem, 8vw, 3.5rem);
+        padding: clamp(2.35rem, 10vw, 4rem) 1rem clamp(2.1rem, 8vw, 3.5rem);
+        margin-bottom: 1.35rem;
+    }
+
+    .hero .brand-hero-logo {
+        width: min(260px, 72vw);
+        margin-bottom: 1.1rem;
+    }
+
+    .hero h1 {
+        font-size: clamp(1.25rem, 5.5vw, 1.7rem);
+        max-width: none;
+    }
+
+    .hero p {
+        font-size: 1rem;
+        max-width: none;
+        margin-bottom: 1.35rem;
+    }
+
+    .hero-actions {
+        gap: 0.55rem;
     }
 
     .hero-actions .btn {
         width: 100%;
+    }
+
+    .home-content .panel {
+        padding: 1.1rem;
+    }
+
+    .wish-panel-heading {
+        gap: 0.7rem;
+    }
+
+    .wish-panel-heading .help {
+        max-width: none;
+    }
+
+    .wish-panel-icon {
+        width: 2.2rem;
+        height: 2.2rem;
+        font-size: 0.95rem;
+    }
+
+    .conversation-group-header .btn,
+    .page-header > a.btn {
+        width: 100%;
+        justify-content: center;
     }
 }
 

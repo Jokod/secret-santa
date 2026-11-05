@@ -1,0 +1,6 @@
+{#
+  href (string), label (string|null), height (int|null)
+#}
+<a class="brand" href="{{ href }}" aria-label="{{ label|default('Secret Santa Familial') }}">
+    <img class="brand-logo" src="{{ asset('images/logo.png') }}" alt="" width="200" height="{{ height|default(60) }}" decoding="async">
+</a>

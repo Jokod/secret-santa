@@ -5,10 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="referrer" content="no-referrer">
     <title>{% block title %}Secret Santa Familial{% endblock %}</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer">
     <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
     <link rel="icon" href="{{ asset('favicon-32.png') }}" type="image/png" sizes="32x32">
     <link rel="icon" href="{{ asset('images/logo-mark.png') }}" type="image/png" sizes="192x192">
@@ -20,45 +16,21 @@
 </head>
 <body>
 {% block header %}
-<header class="site-header">
-    <a class="brand" href="{% block brand_href %}{{ path('home') }}{% endblock %}" aria-label="Secret Santa Familial">
-        <img class="brand-logo" src="{{ asset('images/logo.png') }}" alt="" width="200" height="60" decoding="async">
-    </a>
-    <nav class="nav-links" aria-label="Navigation principale">
+    {% embed '_header.html.twig' with {
+        brand_href: path('home'),
+        brand_label: 'Secret Santa Familial'
+    } %}
         {% block nav %}
-            <a href="{{ path('home') }}">Accueil</a>
-            {% if is_granted('ROLE_ADMIN') %}
-                <a href="{{ path('admin_dashboard') }}">Admin</a>
-                <form class="logout-form" action="{{ path('admin_logout') }}" method="post" data-turbo="false">
-                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
-                    <button class="btn-logout" type="submit">Déconnexion</button>
-                </form>
-            {% else %}
-                <a href="{{ path('admin_login') }}">Espace organisateur</a>
-            {% endif %}
+            {% include '_nav.html.twig' %}
         {% endblock %}
-    </nav>
-</header>
+    {% endembed %}
 {% endblock %}
 
 <main class="{% block main_class %}container-narrow{% endblock %}" style="padding: 1.5rem 0 2rem;">
-    {% for label, messages in app.flashes %}
-        {% for message in messages %}
-            <div class="flash flash-{{ label }}" role="{{ label in ['danger', 'error'] ? 'alert' : 'status' }}">
-                {% if label == 'success' %}<i class="fa-solid fa-circle-check"></i>
-                {% elseif label in ['danger', 'error'] %}<i class="fa-solid fa-circle-exclamation"></i>
-                {% elseif label == 'warning' %}<i class="fa-solid fa-triangle-exclamation"></i>
-                {% else %}<i class="fa-solid fa-circle-info"></i>{% endif %}
-                <span>{{ message }}</span>
-            </div>
-        {% endfor %}
-    {% endfor %}
-
+    {% include '_flashes.html.twig' %}
     {% block body %}{% endblock %}
 </main>
 
-<footer class="site-footer">
-    Une édition, une famille, zéro spoiler.
-</footer>
+{% include '_footer.html.twig' %}
 </body>
 </html>
