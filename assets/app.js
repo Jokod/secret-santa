@@ -17,5 +17,7 @@ import '@fontsource/source-sans-3/latin-700.css';
 import '@fontsource/source-sans-3/latin-ext-400.css';
 import '@fontsource/source-sans-3/latin-ext-600.css';
 import '@fontsource/source-sans-3/latin-ext-700.css';
-import '@fortawesome/fontawesome-free/css/all.min.css';
+import '@fortawesome/fontawesome-free/css/fontawesome.min.css';
+import '@fortawesome/fontawesome-free/css/solid.min.css';
 import './styles/app.css';
+

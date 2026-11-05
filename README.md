@@ -123,7 +123,7 @@ Au démarrage du conteneur `app` :
 
 1. sync metadata migrations  
 2. `doctrine:migrations:migrate`  
-3. `assets:install` + `asset-map:compile`  
+3. `assets:install` + `minify:install` + `asset-map:compile` (CSS/JS minifiés)  
 4. `cache:warmup`  
 
 Le conteneur `worker` reste up et relance en boucle le process `messenger:consume async` (emails en arrière-plan).

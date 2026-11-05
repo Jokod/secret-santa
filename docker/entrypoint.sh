@@ -24,6 +24,7 @@ if [ "$1" = "frankenphp" ]; then
 
     echo "[entrypoint] Assets…"
     php bin/console assets:install --no-interaction
+    php bin/console minify:install --no-interaction
     php bin/console asset-map:compile --no-interaction
 
     echo "[entrypoint] Cache warmup…"

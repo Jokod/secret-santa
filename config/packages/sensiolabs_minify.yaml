@@ -1,0 +1,14 @@
+sensiolabs_minify:
+    asset_mapper:
+        types:
+            css: true
+            js: true
+        ignore_paths:
+            - '*.min.css'
+            - '*.min.js'
+        # Les paquets vendor sont déjà souvent minifiés.
+        ignore_vendor: true
+    minify:
+        # Requis aussi en prod (Docker build + entrypoint asset-map:compile).
+        download_binary: true
+        download_directory: '%kernel.project_dir%/var/minify'

@@ -39,6 +39,7 @@ RUN mkdir -p var/cache var/log \
        MERCURE_JWT_SECRET=build_mercure_secret \
        MERCURE_JWT_ISSUER=https://localhost \
     && php bin/console importmap:install --no-interaction \
+    && php bin/console minify:install --no-interaction \
     && php bin/console asset-map:compile --no-interaction \
     && php bin/console cache:warmup --no-interaction \
     && chmod +x bin/console

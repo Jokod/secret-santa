@@ -9,3 +9,7 @@ when@prod:
     framework:
         asset_mapper:
             missing_import_mode: warn
+            # Pas de minify natif : on précompresse pour gzip/brotli au déploiement.
+            precompress:
+                extensions: ['.css', '.js', '.svg', '.woff', '.woff2']
+

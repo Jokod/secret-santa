@@ -25,7 +25,11 @@ return [
     '@hotwired/turbo' => [
         'version' => '8.0.23',
     ],
-    '@fortawesome/fontawesome-free/css/all.min.css' => [
+    '@fortawesome/fontawesome-free/css/fontawesome.min.css' => [
+        'version' => '6.5.2',
+        'type' => 'css',
+    ],
+    '@fortawesome/fontawesome-free/css/solid.min.css' => [
         'version' => '6.5.2',
         'type' => 'css',
     ],

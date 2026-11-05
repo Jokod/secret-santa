@@ -15,4 +15,6 @@ return [
     Symfony\Bundle\MakerBundle\MakerBundle::class => ['dev' => true],
     DAMA\DoctrineTestBundle\DAMADoctrineTestBundle::class => ['test' => true],
     Symfony\Bundle\MercureBundle\MercureBundle::class => ['all' => true],
+    Sensiolabs\MinifyBundle\SensiolabsMinifyBundle::class => ['all' => true],
 ];
+
