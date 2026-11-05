@@ -44,10 +44,10 @@
         <tbody>
         {% for p in participants %}
             <tr>
-                <td><strong>{{ p.name }}</strong></td>
-                <td>{{ p.email }}</td>
-                <td>{{ p.wishes|length }}</td>
-                <td>
+                <td data-label="Nom"><strong>{{ p.name }}</strong></td>
+                <td data-label="Email">{{ p.email }}</td>
+                <td data-label="Souhaits">{{ p.wishes|length }}</td>
+                <td data-label="Lien personnel">
                     {% set personalLink = default_uri|trim('/', 'right') ~ path('participant_home', {token: p.tokenSecret}) %}
                     <div class="link-cell">
                         <code class="code-link">{{ personalLink }}</code>
@@ -76,7 +76,7 @@
                         </div>
                     </div>
                 </td>
-                <td>
+                <td data-label="Actions">
                     <div class="table-actions">
                         {% if not locked and not p.assigned %}
                             <a class="btn btn-ghost btn-sm" href="{{ path('admin_participants_edit', {id: p.id}) }}">Modifier</a>

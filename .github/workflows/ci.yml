@@ -16,11 +16,11 @@ concurrency:
 jobs:
   lint:
     name: Lint
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       APP_ENV: test
       APP_SECRET: test_secret_not_for_production
-      DATABASE_URL: mysql://root:root@127.0.0.1:3306/santa_test?serverVersion=8.0&charset=utf8mb4
+      DATABASE_URL: mysql://root:root@127.0.0.1:3306/santa_test?serverVersion=8.0.46&charset=utf8mb4
       DEFAULT_URI: http://localhost
       MAILER_DSN: null://null
       MAIL_FROM: noreply@santa.test
@@ -62,7 +62,7 @@ jobs:
 
   test:
     name: Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     services:
       mysql:
         image: mysql:8.0
@@ -79,7 +79,7 @@ jobs:
     env:
       APP_ENV: test
       APP_SECRET: test_secret_not_for_production
-      DATABASE_URL: mysql://root:root@127.0.0.1:3306/santa_test?serverVersion=8.0&charset=utf8mb4
+      DATABASE_URL: mysql://root:root@127.0.0.1:3306/santa_test?serverVersion=8.0.46&charset=utf8mb4
       DEFAULT_URI: http://localhost
       MAILER_DSN: null://null
       MAIL_FROM: noreply@santa.test

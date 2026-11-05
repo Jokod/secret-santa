@@ -164,17 +164,20 @@ a:hover {
     appearance: none;
     background: none;
     border: none;
-    padding: 0;
+    padding: 0.45rem 0.75rem;
     font: inherit;
     font-weight: 600;
-    font-size: 0.95rem;
+    font-size: 0.92rem;
     color: var(--color-muted);
     cursor: pointer;
     text-decoration: none;
+    border-radius: var(--radius);
+    transition: background 0.15s ease, color 0.15s ease;
 }
 
 .btn-logout:hover {
     color: var(--color-fir);
+    background: rgba(31, 77, 58, 0.08);
 }
 
 .container-narrow {
@@ -1824,6 +1827,63 @@ body.elf-game-open {
     user-select: none;
 }
 
+.elf-loading {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 0.85rem;
+    padding: 1.5rem;
+    color: var(--color-surface);
+    text-align: center;
+    text-shadow: 0 1px 8px rgba(42, 36, 32, 0.45);
+    pointer-events: none;
+}
+
+.elf-loading p {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 650;
+}
+
+.elf-loading-spinner {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 999px;
+    border: 3px solid rgba(255, 253, 249, 0.25);
+    border-top-color: var(--color-gold);
+    animation: elf-spin 0.7s linear infinite;
+}
+
+.elf-loading.is-error {
+    color: #ffe3e6;
+}
+
+.elf-loading.is-error i {
+    font-size: 1.75rem;
+    color: #f0b4bb;
+}
+
+.elf-overlay.is-loading .elf-hud {
+    opacity: 0.55;
+}
+
+@keyframes elf-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .elf-loading-spinner {
+        animation: none;
+        border-top-color: rgba(255, 253, 249, 0.25);
+        border-color: var(--color-gold);
+    }
+}
+
 .elf-close {
     position: absolute;
     top: 0.85rem;
@@ -2063,27 +2123,81 @@ body.elf-game-open {
 }
 
 @media (max-width: 720px) {
+    body {
+        overflow-x: clip;
+    }
+
     .site-header {
         flex-wrap: wrap;
-        gap: 0.75rem;
-        padding: 0.85rem 1rem;
+        gap: 0.65rem;
+        padding: 0.75rem 1rem;
+        align-items: flex-start;
     }
 
     .brand-logo {
-        height: 2.35rem;
+        height: 2.25rem;
     }
 
     .nav-links {
-        gap: 0.25rem;
+        width: 100%;
+        justify-content: flex-start;
+        flex-wrap: nowrap;
+        gap: 0.15rem;
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding-bottom: 0.15rem;
+        mask-image: linear-gradient(90deg, #000 0%, #000 calc(100% - 1.5rem), transparent);
     }
 
-    .nav-links a {
-        padding: 0.4rem 0.65rem;
-        font-size: 0.88rem;
+    .nav-links::-webkit-scrollbar {
+        display: none;
+    }
+
+    .nav-links a,
+    .btn-logout {
+        flex-shrink: 0;
+        padding: 0.45rem 0.65rem;
+        font-size: 0.84rem;
+    }
+
+    .container-narrow {
+        width: min(1080px, calc(100% - 1.25rem));
+    }
+
+    main.container-narrow {
+        padding: 1.1rem 0 1.75rem !important;
+    }
+
+    .page-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.85rem;
+    }
+
+    .page-header h1 {
+        font-size: clamp(1.45rem, 6vw, 1.85rem);
+        word-break: break-word;
+    }
+
+    .page-lead {
+        max-width: none;
+        font-size: 0.95rem;
+    }
+
+    .page-header > .btn {
+        width: 100%;
+    }
+
+    .panel {
+        padding: 1.1rem;
+        margin-bottom: 1.15rem;
     }
 
     .budget-callout {
         grid-template-columns: 1fr;
+        padding: 0.9rem 1rem;
     }
 
     .budget-callout-hint {
@@ -2091,8 +2205,190 @@ body.elf-game-open {
         grid-row: 3;
     }
 
+    .stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem;
+    }
+
+    .stat {
+        padding: 0.85rem;
+        min-width: 0;
+    }
+
+    .stat strong {
+        font-size: 1.45rem;
+    }
+
+    .actions-row {
+        gap: 0.5rem;
+    }
+
+    .actions-row > .btn {
+        flex: 1 1 auto;
+        min-width: min(100%, 9.5rem);
+    }
+
+    .table-wrap {
+        overflow-x: visible;
+        margin: 0 -0.15rem;
+    }
+
+    table.data {
+        border: 0;
+    }
+
+    table.data thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
+
+    table.data tbody {
+        display: grid;
+        gap: 0.75rem;
+    }
+
+    table.data tr {
+        display: grid;
+        gap: 0.55rem;
+        padding: 0.9rem 1rem;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius);
+        background: #fff;
+    }
+
+    table.data th,
+    table.data td {
+        display: grid;
+        grid-template-columns: minmax(5.5rem, 34%) minmax(0, 1fr);
+        gap: 0.55rem 0.75rem;
+        align-items: start;
+        padding: 0;
+        border: 0;
+        word-break: break-word;
+    }
+
+    table.data td::before {
+        content: attr(data-label);
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--color-muted);
+        line-height: 1.35;
+        padding-top: 0.15rem;
+    }
+
+    table.data td:not([data-label])::before,
+    table.data td[data-label=""]::before {
+        content: none;
+    }
+
+    table.data td:not([data-label]),
+    table.data td[data-label=""] {
+        grid-template-columns: 1fr;
+    }
+
+    table.data td[data-label="Actions"]:not(:has(*)) {
+        display: none;
+    }
+
+    .link-cell {
+        max-width: none;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.45rem;
+    }
+
+    .link-cell .code-link {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        overflow: hidden;
+        font-size: 0.7rem;
+        line-height: 1.35;
+    }
+
+    .link-cell-actions {
+        justify-content: flex-start;
+    }
+
+    .btn-icon {
+        min-width: 2.4rem;
+        min-height: 2.4rem;
+        padding: 0.55rem;
+    }
+
+    .easter-egg-explainer {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .check-label {
+        align-items: flex-start;
+    }
+
     .table-actions {
         justify-content: flex-start;
+        width: 100%;
+    }
+
+    .table-actions .btn {
+        flex: 1 1 auto;
+    }
+
+    .messaging-card {
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        padding: 0.9rem;
+    }
+
+    .messaging-card-body {
+        flex: 1 1 calc(100% - 3.4rem);
+    }
+
+    .messaging-card > .status-badge,
+    .messaging-card > .help:last-child {
+        width: 100%;
+        margin-left: 3.3rem;
+    }
+
+    .messaging-card-preview {
+        white-space: normal;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+
+    .conversation-group-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .chat-bubble {
+        max-width: 92%;
+    }
+
+    .scoreboard-header {
+        gap: 0.75rem;
+    }
+
+    .scoreboard-row {
+        grid-template-columns: 2rem minmax(0, 1fr) auto;
+        column-gap: 0.65rem;
+        padding: 0.65rem 0.75rem;
+    }
+
+    .scoreboard-when {
+        white-space: normal;
     }
 
     .wish-panel-header {
@@ -2126,5 +2422,48 @@ body.elf-game-open {
     .wish-card-link-primary {
         flex: 1;
         justify-content: center;
+    }
+
+    .form-section + .form-section {
+        padding-top: 1rem;
+    }
+
+    .locked-banner {
+        flex-wrap: wrap;
+    }
+
+    .site-footer {
+        margin-top: 2rem;
+        padding: 1.5rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .hero {
+        padding: clamp(2.5rem, 10vw, 4rem) 1rem clamp(2.25rem, 8vw, 3.5rem);
+    }
+
+    .hero-actions .btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 420px) {
+    .stats {
+        grid-template-columns: 1fr;
+    }
+
+    .messaging-card > .status-badge,
+    .messaging-card > .help:last-child {
+        margin-left: 0;
+    }
+
+    .actions-row > .btn {
+        width: 100%;
+        min-width: 0;
+    }
+
+    table.data td {
+        grid-template-columns: 1fr;
+        gap: 0.2rem;
     }
 }

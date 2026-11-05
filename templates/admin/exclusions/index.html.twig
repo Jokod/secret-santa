@@ -61,9 +61,9 @@
                 <tbody>
                 {% for e in exclusions %}
                     <tr>
-                        <td>{{ e.source.name }}</td>
-                        <td>{{ e.target.name }}</td>
-                        <td>
+                        <td data-label="Source">{{ e.source.name }}</td>
+                        <td data-label="Ne doit pas offrir à">{{ e.target.name }}</td>
+                        <td data-label="Actions">
                             {% if not locked %}
                             <div class="table-actions">
                                 <form method="post" action="{{ path('admin_exclusions_delete', {id: e.id}) }}" onsubmit="return confirm('Supprimer cette exclusion ?');">

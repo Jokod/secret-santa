@@ -14,7 +14,7 @@ DOCKER        = docker
 PHPUNIT       = ./vendor/bin/phpunit
 
 # Docker MySQL test DB (never use the main "santa" database)
-TEST_DATABASE_URL ?= mysql://root:root@127.0.0.1:6950/santa_test?serverVersion=8.0&charset=utf8mb4
+TEST_DATABASE_URL ?= mysql://root:root@127.0.0.1:6950/santa_test?serverVersion=8.0.46&charset=utf8mb4
 
 DOMAIN        = santa
 INSTANCE      ?= staging

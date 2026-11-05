@@ -17,9 +17,11 @@ export default class extends Controller {
 
     connect() {
         this.playing = false;
+        this.starting = false;
         this.score = 0;
         this.elapsed = 0;
         this.sessionToken = null;
+        this.startAbort = null;
         this.spawnTimer = null;
         this.burstTimers = [];
         this.countdownTimer = null;
@@ -112,28 +114,46 @@ export default class extends Controller {
     }
 
     async startGame() {
-        if (this.playing) {
+        if (this.playing || this.starting) {
             return;
         }
 
         this.removeHiddenElf();
+        this.starting = true;
+        this.score = 0;
+        this.elapsed = 0;
+        this.secondsLeft = this.durationValue;
+        this.renderOverlay({ loading: true });
+        this.updateHud();
 
         const session = await this.beginServerSession();
+        if (!this.starting) {
+            // User closed the overlay while the session request was in flight.
+            return;
+        }
+
         if (!session?.sessionToken) {
-            this.placeHiddenElf();
+            this.showLoadingError();
+            window.setTimeout(() => {
+                if (!this.starting) {
+                    return;
+                }
+                this.starting = false;
+                this.destroyOverlay();
+                this.placeHiddenElf();
+            }, 1400);
             return;
         }
 
         this.sessionToken = session.sessionToken;
         if (typeof session.duration === 'number' && session.duration > 0) {
             this.durationValue = session.duration;
+            this.secondsLeft = session.duration;
         }
 
+        this.starting = false;
         this.playing = true;
-        this.score = 0;
-        this.elapsed = 0;
-        this.secondsLeft = this.durationValue;
-        this.renderOverlay();
+        this.hideLoading();
         this.updateHud();
         this.startMusic();
         this.startSnow();
@@ -146,6 +166,9 @@ export default class extends Controller {
             return null;
         }
 
+        this.startAbort?.abort();
+        this.startAbort = new AbortController();
+
         try {
             const response = await fetch(this.startUrlValue, {
                 method: 'POST',
@@ -154,14 +177,37 @@ export default class extends Controller {
                     'X-CSRF-TOKEN': this.csrfTokenValue,
                 },
                 credentials: 'same-origin',
+                signal: this.startAbort.signal,
             });
             if (!response.ok) {
                 return null;
             }
             return await response.json();
-        } catch {
+        } catch (error) {
+            if (error?.name === 'AbortError') {
+                return null;
+            }
             return null;
+        } finally {
+            this.startAbort = null;
         }
+    }
+
+    hideLoading() {
+        this.overlay?.querySelector('[data-elf-loading]')?.remove();
+        this.overlay?.classList.remove('is-loading');
+    }
+
+    showLoadingError() {
+        const loading = this.overlay?.querySelector('[data-elf-loading]');
+        if (!loading) {
+            return;
+        }
+        loading.classList.add('is-error');
+        loading.innerHTML = `
+            <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+            <p>Impossible de démarrer la partie.</p>
+        `;
     }
 
     tick() {
@@ -407,11 +453,15 @@ export default class extends Controller {
             });
     }
 
-    renderOverlay() {
+    renderOverlay({ loading = false } = {}) {
         this.destroyOverlay();
 
+        const minutes = Math.floor(this.secondsLeft / 60);
+        const seconds = this.secondsLeft % 60;
+        const timeLabel = `${minutes}:${String(seconds).padStart(2, '0')}`;
+
         const overlay = document.createElement('div');
-        overlay.className = 'elf-overlay';
+        overlay.className = `elf-overlay${loading ? ' is-loading' : ''}`;
         overlay.setAttribute('role', 'dialog');
         overlay.setAttribute('aria-modal', 'true');
         overlay.setAttribute('aria-label', 'Le lutin farceur');
@@ -421,12 +471,18 @@ export default class extends Controller {
             </button>
             <div class="elf-hud" data-elf-hud>
                 <span data-elf-score>Score : 0</span>
-                <span data-elf-time>1:00</span>
+                <span data-elf-time>${timeLabel}</span>
                 <span data-elf-best>Record : ${this.bestScore}</span>
             </div>
             <div class="elf-snow" data-elf-snow aria-hidden="true"></div>
             <div class="elf-playfield" data-elf-playfield></div>
             <div class="elf-result" data-elf-result hidden></div>
+            ${loading ? `
+                <div class="elf-loading" data-elf-loading role="status" aria-live="polite">
+                    <span class="elf-loading-spinner" aria-hidden="true"></span>
+                    <p>Préparation de la partie…</p>
+                </div>
+            ` : ''}
         `;
 
         overlay.querySelector('[data-elf-close]')?.addEventListener('click', () => this.closeOverlay());
@@ -532,12 +588,20 @@ export default class extends Controller {
     }
 
     closeOverlay() {
+        const wasStarting = this.starting;
+        this.startAbort?.abort();
+        this.startAbort = null;
+        this.starting = false;
         this.stopLoops();
         this.stopMusic();
         this.stopSnow();
         this.playing = false;
+        this.sessionToken = null;
         this.destroyOverlay();
         this.removeHiddenElf();
+        if (wasStarting) {
+            this.placeHiddenElf();
+        }
     }
 
     stopLoops() {

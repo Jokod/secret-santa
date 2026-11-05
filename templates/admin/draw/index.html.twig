@@ -110,8 +110,8 @@
                 <tbody>
                 {% for a in assignments %}
                     <tr>
-                        <td>{{ a.santa.name }}</td>
-                        <td>{{ a.target.name }}</td>
+                        <td data-label="Santa">{{ a.santa.name }}</td>
+                        <td data-label="Offre à">{{ a.target.name }}</td>
                     </tr>
                 {% endfor %}
                 </tbody>

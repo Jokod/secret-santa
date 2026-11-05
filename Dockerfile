@@ -30,7 +30,7 @@ RUN mkdir -p var/cache var/log \
     && composer dump-autoload --classmap-authoritative --no-dev \
     && composer dump-env prod \
     && export APP_SECRET=build \
-       DATABASE_URL="mysql://root:root@database:3306/santa?serverVersion=8.0&charset=utf8mb4" \
+       DATABASE_URL="mysql://root:root@database:3306/santa?serverVersion=8.0.46&charset=utf8mb4" \
        DEFAULT_URI=https://localhost \
        MAILER_DSN=null://null \
        MAIL_FROM=noreply@santa.local \

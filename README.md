@@ -53,7 +53,7 @@ cp .env .env.local
 Exemple de `DATABASE_URL` pointant sur le MySQL du compose local :
 
 ```env
-DATABASE_URL="mysql://root:root@127.0.0.1:6950/santa?serverVersion=8.0&charset=utf8mb4"
+DATABASE_URL="mysql://root:root@127.0.0.1:6950/santa?serverVersion=8.0.46&charset=utf8mb4"
 ```
 
 Démarrer la stack :
