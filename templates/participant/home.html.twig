@@ -71,6 +71,25 @@
         {% endif %}
     </div>
 
+    <div class="gift-purchased-box">
+        {% if giftPurchasedForTarget %}
+            <div class="hint-box" role="status">
+                <strong>Cadeau marqué comme pris.</strong>
+                {{ target.name }} ne peut plus modifier sa liste (sans savoir quel souhait tu as choisi).
+            </div>
+            <form method="post" action="{{ path('participant_gift_purchased_toggle', {token: participant.tokenSecret}) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('gift_purchased_' ~ participant.id) }}">
+                <button class="btn btn-ghost" type="submit">Annuler : cadeau non pris</button>
+            </form>
+        {% else %}
+            <p class="help">Quand tu as acheté le cadeau, signale-le sans révéler lequel. Sa liste passera en lecture seule.</p>
+            <form method="post" action="{{ path('participant_gift_purchased_toggle', {token: participant.tokenSecret}) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('gift_purchased_' ~ participant.id) }}">
+                <button class="btn btn-primary" type="submit">J’ai pris le cadeau</button>
+            </form>
+        {% endif %}
+    </div>
+
     {% if target.wishes is empty %}
         {{ ui.empty('fa-gift', 'Pas encore de souhaits', target.name ~ ' n’a pas encore rempli sa liste. Tu pourras lui écrire via la messagerie.', null, null) }}
     {% else %}
@@ -115,15 +134,22 @@
         {% endif %}
     </div>
 
+    {% if giftPurchasedForMe %}
+        <div class="hint-box warning" role="status">
+            <strong>Ton Santa a déjà pris ton cadeau.</strong>
+            Ta liste est en lecture seule.
+        </div>
+    {% endif %}
+
     {% if participant.wishes is empty %}
-        {{ ui.empty('fa-list', 'Aucun souhait pour l’instant', 'Ajoute quelques idées ci-dessous pour aider ton Santa.', null, null) }}
+        {{ ui.empty('fa-list', 'Aucun souhait pour l’instant', giftPurchasedForMe ? 'Ta liste est verrouillée car ton Santa a déjà pris ton cadeau.' : 'Ajoute quelques idées ci-dessous pour aider ton Santa.', null, null) }}
     {% else %}
         <div class="wish-list" role="list">
             {% for w in participant.wishes %}
                 {% include 'participant/_wish_card.html.twig' with {
                     wish: w,
                     budgetMax: settings.budgetMax,
-                    editable: true,
+                    editable: not giftPurchasedForMe,
                     token: participant.tokenSecret,
                     editingWish: editingWish,
                     variant: 'own'
@@ -132,6 +158,7 @@
         </div>
     {% endif %}
 
+    {% if not giftPurchasedForMe %}
     <div class="wish-form-block" id="wish-form">
         {% if editingWish %}
             <h3 class="form-section-title">Modifier le souhait</h3>
@@ -164,6 +191,7 @@
             {{ form_end(wishForm) }}
         {% endif %}
     </div>
+    {% endif %}
 </section>
 {% if editingWish %}
     <script>

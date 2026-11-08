@@ -34,6 +34,19 @@ final class EntityCoverageTest extends TestCase
         // Re-setting the same participant should not recurse infinitely
         $assignment->setSanta($santa)->setTarget($target);
         self::assertSame($santa, $assignment->getSanta());
+
+        self::assertNull($assignment->getGiftPurchasedAt());
+        self::assertFalse($assignment->isGiftPurchased());
+        $markedAt = new \DateTimeImmutable('2026-11-08 12:00:00');
+        $assignment->markGiftPurchased($markedAt);
+        self::assertTrue($assignment->isGiftPurchased());
+        self::assertSame($markedAt, $assignment->getGiftPurchasedAt());
+        $assignment->clearGiftPurchased();
+        self::assertFalse($assignment->isGiftPurchased());
+        self::assertNull($assignment->getGiftPurchasedAt());
+        $assignment->markGiftPurchased();
+        self::assertTrue($assignment->isGiftPurchased());
+        self::assertInstanceOf(\DateTimeImmutable::class, $assignment->getGiftPurchasedAt());
     }
 
     public function testAssignmentClearingViaNull(): void

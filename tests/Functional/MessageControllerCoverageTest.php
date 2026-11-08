@@ -59,7 +59,7 @@ final class MessageControllerCoverageTest extends AppWebTestCase
         $this->em->clear();
         $reloaded = $this->em->find(Message::class, $unreadId);
         self::assertNotNull($reloaded);
-        self::assertTrue($reloaded->isRead());
+        self::assertFalse($reloaded->isRead());
     }
 
     public function testEmptyMessagesList(): void

@@ -1017,6 +1017,19 @@ select.form-control {
     color: #6d5314;
 }
 
+.gift-purchased-box {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-start;
+    margin-bottom: 1.15rem;
+}
+
+.gift-purchased-box .hint-box {
+    margin-bottom: 0;
+    width: 100%;
+}
+
 .wish-panel-header {
     display: flex;
     flex-wrap: wrap;

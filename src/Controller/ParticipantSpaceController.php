@@ -52,6 +52,12 @@ final class ParticipantSpaceController extends AbstractController
     public function addWish(Request $request, string $token): Response
     {
         $participant = $this->requireParticipant($token);
+        if ($this->isWishListLocked($participant)) {
+            $this->addFlash('danger', 'Ton Santa a déjà pris ton cadeau. Ta liste est en lecture seule.');
+
+            return $this->redirectToRoute('participant_home', ['token' => $token]);
+        }
+
         $settings = $this->settingsRepository->getSettings();
 
         $wish = new Wish();
@@ -77,6 +83,12 @@ final class ParticipantSpaceController extends AbstractController
         $participant = $this->requireParticipant($token);
         if ($wish->getParticipant()?->getId() !== $participant->getId()) {
             throw $this->createNotFoundException('Souhait introuvable.');
+        }
+
+        if ($this->isWishListLocked($participant)) {
+            $this->addFlash('danger', 'Ton Santa a déjà pris ton cadeau. Ta liste est en lecture seule.');
+
+            return $this->redirectToRoute('participant_home', ['token' => $token]);
         }
 
         $settings = $this->settingsRepository->getSettings();
@@ -171,6 +183,12 @@ final class ParticipantSpaceController extends AbstractController
             throw $this->createNotFoundException('Souhait introuvable.');
         }
 
+        if ($this->isWishListLocked($participant)) {
+            $this->addFlash('danger', 'Ton Santa a déjà pris ton cadeau. Ta liste est en lecture seule.');
+
+            return $this->redirectToRoute('participant_home', ['token' => $token]);
+        }
+
         if (!$this->isCsrfTokenValid('delete_wish_'.$wish->getId(), (string) $request->request->get('_token'))) {
             $this->addFlash('danger', 'Jeton de sécurité invalide. Réessayez.');
 
@@ -180,6 +198,36 @@ final class ParticipantSpaceController extends AbstractController
         $this->em->remove($wish);
         $this->em->flush();
         $this->addFlash('success', 'Souhait supprimé.');
+
+        return $this->redirectToRoute('participant_home', ['token' => $token]);
+    }
+
+    #[Route('/gift-purchased', name: 'participant_gift_purchased_toggle', methods: ['POST'])]
+    public function toggleGiftPurchased(Request $request, string $token): Response
+    {
+        $participant = $this->requireParticipant($token);
+        $assignment = $participant->getAssignmentAsSanta();
+        if ($assignment === null || $assignment->getTarget() === null) {
+            $this->addFlash('danger', 'Aucun tirage actif pour signaler un cadeau.');
+
+            return $this->redirectToRoute('participant_home', ['token' => $token]);
+        }
+
+        if (!$this->isCsrfTokenValid('gift_purchased_'.$participant->getId(), (string) $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Jeton de sécurité invalide. Réessayez.');
+
+            return $this->redirectToRoute('participant_home', ['token' => $token]);
+        }
+
+        if ($assignment->isGiftPurchased()) {
+            $assignment->clearGiftPurchased();
+            $this->addFlash('success', 'Cadeau marqué comme non pris. Ta cible peut à nouveau modifier sa liste.');
+        } else {
+            $assignment->markGiftPurchased();
+            $this->addFlash('success', 'Cadeau marqué comme pris. Ta cible ne peut plus modifier sa liste.');
+        }
+
+        $this->em->flush();
 
         return $this->redirectToRoute('participant_home', ['token' => $token]);
     }
@@ -282,6 +330,8 @@ final class ParticipantSpaceController extends AbstractController
         $settings = $this->settingsRepository->getSettings();
         $wishForm ??= $this->createForm(WishType::class, new Wish(), ['budget_max' => $settings->getBudgetMax()]);
         $unread = $this->messageRepository->countUnreadForParticipant($participant);
+        $giftPurchasedForMe = $participant->getAssignmentAsTarget()?->isGiftPurchased() ?? false;
+        $giftPurchasedForTarget = $participant->getAssignmentAsSanta()?->isGiftPurchased() ?? false;
 
         return $this->render('participant/home.html.twig', [
             'participant' => $participant,
@@ -290,9 +340,16 @@ final class ParticipantSpaceController extends AbstractController
             'locked' => $this->lockGuard->isLocked(),
             'wishForm' => $wishForm,
             'editingWish' => $editingWish,
+            'giftPurchasedForMe' => $giftPurchasedForMe,
+            'giftPurchasedForTarget' => $giftPurchasedForTarget,
             'unreadFromTarget' => $unread['fromTarget'],
             'unreadFromSanta' => $unread['fromSanta'],
         ]);
+    }
+
+    private function isWishListLocked(Participant $participant): bool
+    {
+        return $participant->getAssignmentAsTarget()?->isGiftPurchased() ?? false;
     }
 
     private function renderMessagesTarget(Participant $participant, Participant $target, FormInterface $form): Response

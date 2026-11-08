@@ -184,4 +184,15 @@ class MessageRepository extends ServiceEntityRepository
             'fromSanta' => $fromSanta,
         ];
     }
+
+    public function markAllUnread(): int
+    {
+        return (int) $this->getEntityManager()->createQueryBuilder()
+            ->update(Message::class, 'm')
+            ->set('m.isRead', ':unread')
+            ->where('m.isRead = true')
+            ->setParameter('unread', false)
+            ->getQuery()
+            ->execute();
+    }
 }

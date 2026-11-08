@@ -5,7 +5,6 @@ namespace App\Controller\Admin;
 use App\Entity\Participant;
 use App\Repository\MessageRepository;
 use App\Repository\ParticipantRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -28,7 +27,6 @@ final class MessageController extends AbstractController
         int $targetId,
         ParticipantRepository $participants,
         MessageRepository $messages,
-        EntityManagerInterface $em,
     ): Response {
         $santa = $participants->find($santaId);
         $target = $participants->find($targetId);
@@ -40,13 +38,6 @@ final class MessageController extends AbstractController
         if ($thread === []) {
             throw new NotFoundHttpException('Conversation introuvable.');
         }
-
-        foreach ($thread as $message) {
-            if (!$message->isRead()) {
-                $message->setIsRead(true);
-            }
-        }
-        $em->flush();
 
         return $this->render('admin/messages/show.html.twig', [
             'santa' => $santa,

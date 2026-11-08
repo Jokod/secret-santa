@@ -803,4 +803,120 @@ final class ParticipantSpaceControllerCoverageTest extends AppWebTestCase
         self::assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         self::assertSame('{"ok":false,"error":"csrf"}', $this->client->getResponse()->getContent());
     }
+
+    public function testSantaCanToggleGiftPurchasedAndTargetListLocks(): void
+    {
+        $this->ensureSettings(50);
+        $santa = $this->createParticipant('GiftSanta', 'giftsanta@example.com');
+        $target = $this->createParticipant('GiftTarget', 'gifttarget@example.com');
+        $wish = (new Wish())->setTitle('Livre')->setEstimatedPrice(20)->setPreferenceOrder(1);
+        $target->addWish($wish);
+
+        $toTarget = (new Assignment())->setSanta($santa)->setTarget($target);
+        $this->em->persist($toTarget);
+        $this->em->persist((new Assignment())->setSanta($target)->setTarget($santa));
+        $this->em->flush();
+        $wishId = $wish->getId();
+        $assignmentId = $toTarget->getId();
+
+        $crawler = $this->client->request('GET', '/participant/'.$santa->getTokenSecret());
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('button', 'J’ai pris le cadeau');
+
+        $this->client->submit($crawler->filter('form[action$="/gift-purchased"]')->form());
+        self::assertResponseRedirects('/participant/'.$santa->getTokenSecret());
+        $this->client->followRedirect();
+        self::assertSelectorExists('.flash-success');
+        self::assertSelectorTextContains('button', 'Annuler : cadeau non pris');
+
+        $this->em->clear();
+        $assignment = $this->em->find(Assignment::class, $assignmentId);
+        self::assertNotNull($assignment);
+        self::assertTrue($assignment->isGiftPurchased());
+
+        $crawler = $this->client->request('GET', '/participant/'.$target->getTokenSecret());
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('.hint-box.warning', 'Ton Santa a déjà pris ton cadeau');
+        self::assertSelectorNotExists('.form-section-title');
+        self::assertSelectorNotExists(sprintf('form[action$="/wishes/%d/delete"]', $wishId));
+
+        $this->client->request('POST', '/participant/'.$target->getTokenSecret().'/wishes/new', [
+            'wish' => [
+                'title' => 'Ne doit pas passer',
+                'estimatedPrice' => '10',
+                'preferenceOrder' => '2',
+                '_token' => 'ignored',
+            ],
+        ]);
+        self::assertResponseRedirects('/participant/'.$target->getTokenSecret());
+        $this->client->followRedirect();
+        self::assertSelectorExists('.flash-danger');
+
+        $this->client->request('GET', '/participant/'.$target->getTokenSecret().'/wishes/'.$wishId.'/edit');
+        self::assertResponseRedirects('/participant/'.$target->getTokenSecret());
+        $this->client->followRedirect();
+        self::assertSelectorExists('.flash-danger');
+
+        $this->client->request(
+            'POST',
+            '/participant/'.$target->getTokenSecret().'/wishes/'.$wishId.'/delete',
+            ['_token' => 'anything']
+        );
+        self::assertResponseRedirects('/participant/'.$target->getTokenSecret());
+        $this->client->followRedirect();
+        self::assertSelectorExists('.flash-danger');
+        self::assertNotNull($this->em->find(Wish::class, $wishId));
+
+        $crawler = $this->client->request('GET', '/participant/'.$santa->getTokenSecret());
+        $this->client->submit($crawler->filter('form[action$="/gift-purchased"]')->form());
+        self::assertResponseRedirects('/participant/'.$santa->getTokenSecret());
+        $this->client->followRedirect();
+        self::assertSelectorTextContains('button', 'J’ai pris le cadeau');
+
+        $this->em->clear();
+        $assignment = $this->em->find(Assignment::class, $assignmentId);
+        self::assertNotNull($assignment);
+        self::assertFalse($assignment->isGiftPurchased());
+
+        $crawler = $this->client->request('GET', '/participant/'.$target->getTokenSecret());
+        self::assertSelectorTextContains('.form-section-title', 'Ajouter un souhait');
+        self::assertSelectorNotExists('.hint-box.warning');
+        self::assertSelectorExists(sprintf('form[action$="/wishes/%d/delete"]', $wishId));
+    }
+
+    public function testGiftPurchasedToggleWithoutAssignment(): void
+    {
+        $this->ensureSettings(50);
+        $p = $this->createParticipant('NoGiftAssign', 'nogiftassign@example.com');
+
+        $this->client->request(
+            'POST',
+            '/participant/'.$p->getTokenSecret().'/gift-purchased',
+            ['_token' => 'x']
+        );
+        self::assertResponseRedirects('/participant/'.$p->getTokenSecret());
+        $this->client->followRedirect();
+        self::assertSelectorExists('.flash-danger');
+    }
+
+    public function testGiftPurchasedToggleInvalidCsrf(): void
+    {
+        $this->ensureSettings(50);
+        $santa = $this->createParticipant('GiftCsrfSanta', 'giftcsrfsanta@example.com');
+        $target = $this->createParticipant('GiftCsrfTarget', 'giftcsrftarget@example.com');
+        $this->em->persist((new Assignment())->setSanta($santa)->setTarget($target));
+        $this->em->persist((new Assignment())->setSanta($target)->setTarget($santa));
+        $this->em->flush();
+
+        $this->client->request(
+            'POST',
+            '/participant/'.$santa->getTokenSecret().'/gift-purchased',
+            ['_token' => 'invalid']
+        );
+        self::assertResponseRedirects('/participant/'.$santa->getTokenSecret());
+        $this->client->followRedirect();
+        self::assertSelectorExists('.flash-danger');
+        self::assertSelectorTextContains('.flash-danger', 'Jeton');
+        self::assertFalse($santa->getAssignmentAsSanta()?->isGiftPurchased());
+    }
 }
