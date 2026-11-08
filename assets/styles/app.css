@@ -1019,15 +1019,20 @@ select.form-control {
 
 .gift-purchased-box {
     display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 0.75rem 1rem;
+    align-items: center;
     margin-bottom: 1.15rem;
 }
 
-.gift-purchased-box .hint-box {
-    margin-bottom: 0;
-    width: 100%;
+.gift-purchased-box form {
+    flex-shrink: 0;
+}
+
+.gift-purchased-box .help {
+    margin: 0;
+    flex: 1;
+    min-width: 16ch;
 }
 
 .wish-panel-header {
@@ -1788,6 +1793,7 @@ select.form-control {
 .elf-peek-slot {
     position: relative;
     isolation: isolate;
+    overflow: visible;
 }
 
 .elf-host {
@@ -1811,6 +1817,7 @@ select.form-control {
     opacity: 1;
     transition: transform 0.22s ease, filter 0.22s ease;
     -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
 }
 
 /* Moitié cachée derrière le bloc (le host opaque passe devant) */
@@ -1875,8 +1882,43 @@ select.form-control {
     transform: translateX(72%);
 }
 
+/* Touch / narrow screens: no hover, peeks clipped by overflow-x — show more of the elf. */
+@media (hover: none), (pointer: coarse) {
+    .elf-hideout {
+        z-index: 3;
+        width: 4.25rem;
+        height: 4.25rem;
+    }
+
+    .elf-peek-top {
+        transform: translateY(-68%);
+    }
+
+    .elf-peek-bottom {
+        transform: translateY(68%);
+    }
+
+    .elf-peek-left {
+        transform: translateX(-68%);
+    }
+
+    .elf-peek-right {
+        transform: translateX(68%);
+    }
+}
+
 body.elf-game-open {
     overflow: hidden;
+}
+
+.elf-result-save {
+    margin: 0.75rem 0 0;
+    font-size: 0.95rem;
+    color: rgba(255, 253, 249, 0.9);
+}
+
+.elf-result-save.is-error {
+    color: #ffd0d6;
 }
 
 .elf-overlay {
@@ -2189,6 +2231,11 @@ body.elf-game-open {
 @media (max-width: 720px) {
     body {
         overflow-x: clip;
+    }
+
+    /* Keep easter-egg peeks tappable above clipped body edges. */
+    .elf-peek-slot {
+        z-index: 2;
     }
 
     .site-header {

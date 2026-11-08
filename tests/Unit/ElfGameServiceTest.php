@@ -68,7 +68,12 @@ final class ElfGameServiceTest extends TestCase
         $started = new \DateTimeImmutable('2026-12-24 10:00:00');
         $token = $service->startSession($participant, $started);
 
-        $result = $service->submitScore($participant, $token, 10, $started->modify('+120 seconds'));
+        $result = $service->submitScore(
+            $participant,
+            $token,
+            10,
+            $started->modify('+'.(ElfGameService::MAX_ELAPSED_SECONDS + 30).' seconds'),
+        );
 
         self::assertFalse($result['ok']);
         self::assertSame('expired', $result['error']);

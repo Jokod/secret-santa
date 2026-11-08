@@ -73,20 +73,17 @@
 
     <div class="gift-purchased-box">
         {% if giftPurchasedForTarget %}
-            <div class="hint-box" role="status">
-                <strong>Cadeau marqué comme pris.</strong>
-                {{ target.name }} ne peut plus modifier sa liste (sans savoir quel souhait tu as choisi).
-            </div>
             <form method="post" action="{{ path('participant_gift_purchased_toggle', {token: participant.tokenSecret}) }}">
                 <input type="hidden" name="_token" value="{{ csrf_token('gift_purchased_' ~ participant.id) }}">
-                <button class="btn btn-ghost" type="submit">Annuler : cadeau non pris</button>
+                <button class="btn btn-ghost" type="submit">Ce n’est plus pris</button>
             </form>
+            <p class="help" role="status">Cadeau déjà pris : {{ target.name }} ne peut plus toucher à sa liste.</p>
         {% else %}
-            <p class="help">Quand tu as acheté le cadeau, signale-le sans révéler lequel. Sa liste passera en lecture seule.</p>
             <form method="post" action="{{ path('participant_gift_purchased_toggle', {token: participant.tokenSecret}) }}">
                 <input type="hidden" name="_token" value="{{ csrf_token('gift_purchased_' ~ participant.id) }}">
                 <button class="btn btn-primary" type="submit">J’ai pris le cadeau</button>
             </form>
+            <p class="help">Dis-le une fois le cadeau acheté : {{ target.name }} saura qu’il n’a plus besoin d’ajouter d’idées.</p>
         {% endif %}
     </div>
 

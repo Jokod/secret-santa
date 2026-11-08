@@ -14,7 +14,7 @@ final class ElfGameService
 {
     public const DURATION_SECONDS = 60;
     public const MIN_ELAPSED_SECONDS = 55;
-    public const MAX_ELAPSED_SECONDS = 90;
+    public const MAX_ELAPSED_SECONDS = 300;
     /** Generous upper bound: ~2 catches/sec over the whole round. */
     public const MAX_SCORE_PER_SECOND = 2;
 

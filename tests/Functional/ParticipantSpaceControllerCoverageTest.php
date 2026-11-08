@@ -6,6 +6,7 @@ use App\Entity\Assignment;
 use App\Entity\Message;
 use App\Entity\Wish;
 use App\Enum\MessageType;
+use App\Service\ElfGameService;
 use App\Tests\AppWebTestCase;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -607,7 +608,7 @@ final class ParticipantSpaceControllerCoverageTest extends AppWebTestCase
         $this->em->clear();
         $p = $this->em->getRepository(\App\Entity\Participant::class)->findOneBy(['email' => 'elfscoreoff@example.com']);
         self::assertNotNull($p);
-        $p->setElfGameStartedAt(new \DateTimeImmutable('-120 seconds'));
+        $p->setElfGameStartedAt(new \DateTimeImmutable('-'.(ElfGameService::MAX_ELAPSED_SECONDS + 30).' seconds'));
         $this->em->flush();
 
         $this->client->request('POST', '/participant/'.$p->getTokenSecret().'/elf-score', [], [], [
@@ -827,7 +828,7 @@ final class ParticipantSpaceControllerCoverageTest extends AppWebTestCase
         self::assertResponseRedirects('/participant/'.$santa->getTokenSecret());
         $this->client->followRedirect();
         self::assertSelectorExists('.flash-success');
-        self::assertSelectorTextContains('button', 'Annuler : cadeau non pris');
+        self::assertSelectorTextContains('button', 'Ce n’est plus pris');
 
         $this->em->clear();
         $assignment = $this->em->find(Assignment::class, $assignmentId);

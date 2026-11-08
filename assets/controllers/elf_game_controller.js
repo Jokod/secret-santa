@@ -21,6 +21,7 @@ export default class extends Controller {
         this.score = 0;
         this.elapsed = 0;
         this.sessionToken = null;
+        this.startedAtMs = null;
         this.startAbort = null;
         this.spawnTimer = null;
         this.burstTimers = [];
@@ -40,6 +41,11 @@ export default class extends Controller {
         this.teardown();
     }
 
+    isCoarsePointer() {
+        return window.matchMedia('(hover: none), (pointer: coarse)').matches
+            || window.matchMedia('(max-width: 720px)').matches;
+    }
+
     placeHiddenElf() {
         this.removeHiddenElf();
 
@@ -56,7 +62,10 @@ export default class extends Controller {
             return;
         }
 
-        const peeks = ['elf-peek-top', 'elf-peek-right', 'elf-peek-bottom', 'elf-peek-left'];
+        // Left/right peeks are often clipped by body overflow-x: clip on mobile.
+        const peeks = this.isCoarsePointer()
+            ? ['elf-peek-top', 'elf-peek-bottom']
+            : ['elf-peek-top', 'elf-peek-right', 'elf-peek-bottom', 'elf-peek-left'];
         const peek = peeks[Math.floor(Math.random() * peeks.length)];
 
         const wrap = document.createElement('div');
@@ -76,11 +85,14 @@ export default class extends Controller {
         img.draggable = false;
         elf.appendChild(img);
 
-        elf.addEventListener('click', (event) => {
+        const open = (event) => {
             event.preventDefault();
             event.stopPropagation();
             this.startGame();
-        });
+        };
+        // pointerdown is more reliable than click alone on iOS Safari.
+        elf.addEventListener('pointerdown', open);
+        elf.addEventListener('click', open);
 
         host.parentNode.insertBefore(wrap, host);
         wrap.appendChild(elf);
@@ -123,6 +135,7 @@ export default class extends Controller {
         this.score = 0;
         this.elapsed = 0;
         this.secondsLeft = this.durationValue;
+        this.startedAtMs = null;
         this.renderOverlay({ loading: true });
         this.updateHud();
 
@@ -153,11 +166,12 @@ export default class extends Controller {
 
         this.starting = false;
         this.playing = true;
+        this.startedAtMs = Date.now();
         this.hideLoading();
         this.updateHud();
         this.startMusic();
         this.startSnow();
-        this.countdownTimer = window.setInterval(() => this.tick(), 1000);
+        this.countdownTimer = window.setInterval(() => this.tick(), 250);
         this.scheduleSpawn();
     }
 
@@ -211,15 +225,16 @@ export default class extends Controller {
     }
 
     tick() {
-        if (!this.playing) {
+        if (!this.playing || this.startedAtMs === null) {
             return;
         }
 
-        this.secondsLeft -= 1;
-        this.elapsed += 1;
+        const elapsedMs = Date.now() - this.startedAtMs;
+        this.elapsed = Math.floor(elapsedMs / 1000);
+        this.secondsLeft = Math.max(0, this.durationValue - Math.ceil(elapsedMs / 1000));
         this.updateHud();
 
-        if (this.secondsLeft <= 0) {
+        if (elapsedMs >= this.durationValue * 1000) {
             this.endGame();
         }
     }
@@ -386,16 +401,14 @@ export default class extends Controller {
     }
 
     endGame() {
+        if (!this.playing) {
+            return;
+        }
+
         const isNewBest = this.score > this.bestScore;
         if (isNewBest) {
             this.bestScore = this.score;
             this.writeBestScore(this.bestScore);
-        }
-        // Always submit (even 0-ish / non-record) to burn the one-shot server session.
-        if (this.score > 0) {
-            this.persistBestScore(this.score);
-        } else {
-            this.sessionToken = null;
         }
 
         this.stopLoops();
@@ -417,13 +430,31 @@ export default class extends Controller {
             result.innerHTML = `
                 <p class="elf-result-score">Score : <strong>${this.score}</strong></p>
                 <p class="elf-result-best">Meilleur score : <strong>${this.bestScore}</strong>${isNewBest ? ' · nouveau record !' : ''}</p>
+                <p class="elf-result-save" data-elf-save role="status">${this.score > 0 ? 'Enregistrement du score…' : ''}</p>
                 <p class="elf-result-joke">Ton Santa a été notifié… non, on plaisante.</p>
             `;
         }
+
+        // Always submit (even 0-ish / non-record) to burn the one-shot server session.
+        if (this.score > 0) {
+            this.persistBestScore(this.score);
+        } else {
+            this.sessionToken = null;
+        }
+    }
+
+    setSaveStatus(message, isError = false) {
+        const el = this.overlay?.querySelector('[data-elf-save]');
+        if (!el) {
+            return;
+        }
+        el.textContent = message;
+        el.classList.toggle('is-error', isError);
     }
 
     persistBestScore(score) {
         if (!this.scoreUrlValue || !this.csrfTokenValue || !this.sessionToken) {
+            this.setSaveStatus('Score non envoyé (session manquante).', true);
             return;
         }
 
@@ -439,18 +470,55 @@ export default class extends Controller {
             },
             body: JSON.stringify({ score, sessionToken }),
             credentials: 'same-origin',
+            keepalive: true,
         })
-            .then((response) => (response.ok ? response.json() : null))
-            .then((data) => {
+            .then(async (response) => {
+                let data = null;
+                try {
+                    data = await response.json();
+                } catch {
+                    data = null;
+                }
+                return { response, data };
+            })
+            .then(({ response, data }) => {
                 if (data && typeof data.bestScore === 'number') {
                     this.bestScore = Math.max(this.bestScore, data.bestScore);
                     this.writeBestScore(this.bestScore);
                     this.updateHud();
+                    const bestLabel = this.overlay?.querySelector('.elf-result-best strong');
+                    if (bestLabel) {
+                        bestLabel.textContent = String(this.bestScore);
+                    }
+                    this.setSaveStatus(
+                        data.updated ? 'Score enregistré au classement !' : 'Score reçu (pas de nouveau record).',
+                    );
+                    return;
                 }
+
+                const error = data?.error ?? (response.ok ? 'unknown' : `http_${response.status}`);
+                this.setSaveStatus(this.saveErrorMessage(error), true);
             })
             .catch(() => {
-                // ignore network errors — local record remains
+                this.setSaveStatus('Impossible d’enregistrer le score (réseau).', true);
             });
+    }
+
+    saveErrorMessage(error) {
+        switch (error) {
+            case 'too_early':
+                return 'Partie trop courte pour le serveur. Rejoue jusqu’à la fin.';
+            case 'expired':
+                return 'Session expirée (onglet en veille trop longtemps). Rejoue une partie.';
+            case 'csrf':
+            case 'session':
+            case 'no_session':
+                return 'Session invalide. Recharge la page puis rejoue.';
+            case 'disabled':
+                return 'Le jeu est désactivé.';
+            default:
+                return 'Score non enregistré. Réessaie.';
+        }
     }
 
     renderOverlay({ loading = false } = {}) {
@@ -597,6 +665,7 @@ export default class extends Controller {
         this.stopSnow();
         this.playing = false;
         this.sessionToken = null;
+        this.startedAtMs = null;
         this.destroyOverlay();
         this.removeHiddenElf();
         if (wasStarting) {
