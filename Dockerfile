@@ -6,8 +6,9 @@ WORKDIR /app
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
+# No apcu: unused (cache filesystem) and PECL installs break on OpenSSL >= 3.5
+# (https://github.com/php/web-pecl/issues/118).
 RUN install-php-extensions \
-    apcu \
     intl \
     opcache \
     pdo_mysql \
